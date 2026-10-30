@@ -1,0 +1,92 @@
+--- SLIDE 1 ---
+建立一个新工程以及基本设置
+电子科技大学  机械与电气工程学院
+梁莹林
+--- SLIDE 2 ---
+Bootloader
+用户程序
+--- SLIDE 3 ---
+
+--- SLIDE 4 ---
+
+--- SLIDE 5 ---
+
+--- SLIDE 6 ---
+
+--- SLIDE 7 ---
+建立一个新工程
+--- SLIDE 8 ---
+
+--- SLIDE 9 ---
+
+--- SLIDE 10 ---
+
+--- SLIDE 11 ---
+设置单片机的时钟源（外部晶振）和主频
+--- SLIDE 12 ---
+
+--- SLIDE 13 ---
+
+--- SLIDE 14 ---
+GPIO
+的设置
+--- SLIDE 15 ---
+
+--- SLIDE 16 ---
+
+--- SLIDE 17 ---
+
+--- SLIDE 18 ---
+
+--- SLIDE 19 ---
+RTOS
+的设置（以 按键 切换 
+LED
+状态 为例）
+--- SLIDE 20 ---
+
+--- SLIDE 21 ---
+
+--- SLIDE 22 ---
+
+--- SLIDE 23 ---
+
+--- SLIDE 24 ---
+
+--- SLIDE 25 ---
+
+--- SLIDE 26 ---
+生成工程，添加用户代码，修改设置更新工程
+--- SLIDE 27 ---
+
+--- SLIDE 28 ---
+
+--- SLIDE 29 ---
+
+--- SLIDE 30 ---
+
+--- SLIDE 31 ---
+
+--- SLIDE 32 ---
+
+--- SLIDE 33 ---
+查看各种函数
+--- SLIDE 34 ---
+
+--- SLIDE 35 ---
+
+--- SLIDE 36 ---
+下载程序
+--- SLIDE 37 ---
+
+--- SLIDE 38 ---
+
+--- SLIDE 39 ---
+
+--- SLIDE 40 ---
+
+--- SLIDE 41 ---
+
+--- SLIDE 42 ---
+
+--- SLIDE 43 ---

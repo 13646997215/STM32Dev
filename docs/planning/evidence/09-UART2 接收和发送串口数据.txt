@@ -1,0 +1,90 @@
+--- SLIDE 1 ---
+UART2 
+接收和发送串口数据
+电子科技大学  机械与电气工程学院
+梁莹林
+--- SLIDE 2 ---
+设置
+UART2
+，接收数据产生中断
+--- SLIDE 3 ---
+
+--- SLIDE 4 ---
+
+--- SLIDE 5 ---
+开启串口
+2
+任务，设置信号量
+--- SLIDE 6 ---
+
+--- SLIDE 7 ---
+
+--- SLIDE 8 ---
+
+--- SLIDE 9 ---
+
+--- SLIDE 10 ---
+
+--- SLIDE 11 ---
+STM32
+上电
+STM32
+的串口
+2
+发送“
+Hello
+！”
+STM32
+的等待收到串口
+2
+数据
+（以中断方式接收，收到后，产生信号量
+myBinarySem_UART2RecvHandle
+）
+（
+10
+个字节的
+ASCII
+码，前
+5
+个表示左电机转速，后
+5
+个为右电机）
+用  
+atoi
+(
+tempstr
+)  
+把
+ASCII
+码字符串转为整数
+左、右电机的转速值（
+int16
+），通过
+STM32
+的串口
+2
+发送（返回
+PC
+），高字节在前，低字节在后
+产生信号量
+myBinarySem_MotorSpdChangeHandle
+--- SLIDE 12 ---
+
+--- SLIDE 13 ---
+电机控制任务，用串口
+2
+收到的数据改变电机速度
+--- SLIDE 14 ---
+
+--- SLIDE 15 ---
+
+--- SLIDE 16 ---
+
+--- SLIDE 17 ---
+
+--- SLIDE 18 ---
+
+--- SLIDE 19 ---
+
+--- SLIDE 20 ---

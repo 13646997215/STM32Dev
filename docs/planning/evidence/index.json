@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1,
+    "source": "C:\\Users\\PC\\OneDrive\\桌面\\《模块化机器人综合设计实践》\\传感器模块\\GY953相关文档\\GY-953使用手册v2.pdf",
+    "relative": "传感器模块\\GY953相关文档\\GY-953使用手册v2.pdf",
+    "text": "D:\\STM32Dev\\plans\\course-integration-2026-10-17\\evidence\\01-GY-953使用手册v2.txt",
+    "sections": 11,
+    "chars": 8966
+  },
+  {
+    "id": 2,
+    "source": "C:\\Users\\PC\\OneDrive\\桌面\\《模块化机器人综合设计实践》\\传感器模块\\串口数据帧解悉（以GY953为例）\\串口数据帧解悉（以GY953为例）.pptx",
+    "relative": "传感器模块\\串口数据帧解悉（以GY953为例）\\串口数据帧解悉（以GY953为例）.pptx",
+    "text": "D:\\STM32Dev\\plans\\course-integration-2026-10-17\\evidence\\02-串口数据帧解悉（以GY953为例）.txt",
+    "sections": 14,
+    "chars": 2544
+  },
+  {
+    "id": 3,
+    "source": "C:\\Users\\PC\\OneDrive\\桌面\\《模块化机器人综合设计实践》\\控制器模块\\STM32F401\\STM32F401 411核心板原理图.pdf",
+    "relative": "控制器模块\\STM32F401\\STM32F401 411核心板原理图.pdf",
+    "text": "D:\\STM32Dev\\plans\\course-integration-2026-10-17\\evidence\\03-STM32F401 411核心板原理图.txt",
+    "sections": 2,
+    "chars": 5934
+  },
+  {
+    "id": 4,
+    "source": "C:\\Users\\PC\\OneDrive\\桌面\\《模块化机器人综合设计实践》\\机器人跷跷板题目说明.pdf",
+    "relative": "机器人跷跷板题目说明.pdf",
+    "text": "D:\\STM32Dev\\plans\\course-integration-2026-10-17\\evidence\\04-机器人跷跷板题目说明.txt",
+    "sections": 2,
+    "chars": 1324
+  },
+  {
+    "id": 5,
+    "source": "C:\\Users\\PC\\OneDrive\\桌面\\《模块化机器人综合设计实践》\\模块化机器人综合设计实践_器材使用表&过程评价表&预测评表&最测评表（1组1份）.pdf",
+    "relative": "模块化机器人综合设计实践_器材使用表&过程评价表&预测评表&最测评表（1组1份）.pdf",
+    "text": "D:\\STM32Dev\\plans\\course-integration-2026-10-17\\evidence\\05-模块化机器人综合设计实践_器材使用表&过程评价表&预测评表&最测评表（1组1份）.txt",
+    "sections": 4,
+    "chars": 1689
+  },
+  {
+    "id": 6,
+    "source": "C:\\Users\\PC\\OneDrive\\桌面\\《模块化机器人综合设计实践》\\模块化机器人综合设计实践_报告模板.docx",
+    "relative": "模块化机器人综合设计实践_报告模板.docx",
+    "text": "D:\\STM32Dev\\plans\\course-integration-2026-10-17\\evidence\\06-模块化机器人综合设计实践_报告模板.txt",
+    "sections": 23,
+    "chars": 1463
+  },
+  {
+    "id": 7,
+    "source": "C:\\Users\\PC\\OneDrive\\桌面\\《模块化机器人综合设计实践》\\范例\\STM32例子\\DEMO\\9轴数据的FIR滤波器\\9轴数据的FIR滤波器.pptx",
+    "relative": "范例\\STM32例子\\DEMO\\9轴数据的FIR滤波器\\9轴数据的FIR滤波器.pptx",
+    "text": "D:\\STM32Dev\\plans\\course-integration-2026-10-17\\evidence\\07-9轴数据的FIR滤波器.txt",
+    "sections": 20,
+    "chars": 1573
+  },
+  {
+    "id": 8,
+    "source": "C:\\Users\\PC\\OneDrive\\桌面\\《模块化机器人综合设计实践》\\范例\\STM32例子\\DEMO\\UART1 接收和发送GY953串口数据\\UART1 接收和发送GY953串口数据.pptx",
+    "relative": "范例\\STM32例子\\DEMO\\UART1 接收和发送GY953串口数据\\UART1 接收和发送GY953串口数据.pptx",
+    "text": "D:\\STM32Dev\\plans\\course-integration-2026-10-17\\evidence\\08-UART1 接收和发送GY953串口数据.txt",
+    "sections": 27,
+    "chars": 584
+  },
+  {
+    "id": 9,
+    "source": "C:\\Users\\PC\\OneDrive\\桌面\\《模块化机器人综合设计实践》\\范例\\STM32例子\\DEMO\\UART2 接收和发送串口数据\\UART2 接收和发送串口数据.pptx",
+    "relative": "范例\\STM32例子\\DEMO\\UART2 接收和发送串口数据\\UART2 接收和发送串口数据.pptx",
+    "text": "D:\\STM32Dev\\plans\\course-integration-2026-10-17\\evidence\\09-UART2 接收和发送串口数据.txt",
+    "sections": 20,
+    "chars": 705
+  },
+  {
+    "id": 10,
+    "source": "C:\\Users\\PC\\OneDrive\\桌面\\《模块化机器人综合设计实践》\\范例\\STM32例子\\DEMO\\产生PWM信号\\产生PWM信号.pptx",
+    "relative": "范例\\STM32例子\\DEMO\\产生PWM信号\\产生PWM信号.pptx",
+    "text": "D:\\STM32Dev\\plans\\course-integration-2026-10-17\\evidence\\10-产生PWM信号.txt",
+    "sections": 15,
+    "chars": 329
+  },
+  {
+    "id": 11,
+    "source": "C:\\Users\\PC\\OneDrive\\桌面\\《模块化机器人综合设计实践》\\范例\\STM32例子\\DEMO\\建立一个新工程以及基本设置\\建立一个新工程以及基本设置.pptx",
+    "relative": "范例\\STM32例子\\DEMO\\建立一个新工程以及基本设置\\建立一个新工程以及基本设置.pptx",
+    "text": "D:\\STM32Dev\\plans\\course-integration-2026-10-17\\evidence\\11-建立一个新工程以及基本设置.txt",
+    "sections": 43,
+    "chars": 863
+  },
+  {
+    "id": 12,
+    "source": "C:\\Users\\PC\\OneDrive\\桌面\\《模块化机器人综合设计实践》\\范例\\STM32例子\\DEMO\\无刷直流减速电机36GP3626的转速PID\\无刷直流减速电机36GP3626的转速PID（2通道）.pptx",
+    "relative": "范例\\STM32例子\\DEMO\\无刷直流减速电机36GP3626的转速PID\\无刷直流减速电机36GP3626的转速PID（2通道）.pptx",
+    "text": "D:\\STM32Dev\\plans\\course-integration-2026-10-17\\evidence\\12-无刷直流减速电机36GP3626的转速PID（2通道）.txt",
+    "sections": 13,
+    "chars": 758
+  },
+  {
+    "id": 13,
+    "source": "C:\\Users\\PC\\OneDrive\\桌面\\《模块化机器人综合设计实践》\\范例\\STM32例子\\DEMO\\无刷直流减速电机36GP3626的转速PID\\无刷直流减速电机36GP3626资料文档.docx",
+    "relative": "范例\\STM32例子\\DEMO\\无刷直流减速电机36GP3626的转速PID\\无刷直流减速电机36GP3626资料文档.docx",
+    "text": "D:\\STM32Dev\\plans\\course-integration-2026-10-17\\evidence\\13-无刷直流减速电机36GP3626资料文档.txt",
+    "sections": 1,
+    "chars": 0
+  },
+  {
+    "id": 14,
+    "source": "C:\\Users\\PC\\OneDrive\\桌面\\《模块化机器人综合设计实践》\\范例\\STM32例子\\STM32F401 411核心板原理图.pdf",
+    "relative": "范例\\STM32例子\\STM32F401 411核心板原理图.pdf",
+    "text": "D:\\STM32Dev\\plans\\course-integration-2026-10-17\\evidence\\14-STM32F401 411核心板原理图.txt",
+    "sections": 2,
+    "chars": 5934
+  },
+  {
+    "id": 15,
+    "source": "C:\\Users\\PC\\OneDrive\\桌面\\《模块化机器人综合设计实践》\\通信模块\\蓝牙模块资料\\蓝牙模块资料（型号HC-05）\\如何设置HC05蓝牙模块.pptx",
+    "relative": "通信模块\\蓝牙模块资料\\蓝牙模块资料（型号HC-05）\\如何设置HC05蓝牙模块.pptx",
+    "text": "D:\\STM32Dev\\plans\\course-integration-2026-10-17\\evidence\\15-如何设置HC05蓝牙模块.txt",
+    "sections": 12,
+    "chars": 1699
+  }
+]

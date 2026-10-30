@@ -1,0 +1,63 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Course: 软件测试（不连接硬件）",
+      "type": "process",
+      "command": "${workspaceFolder}/../../environment/python/python.exe",
+      "args": [
+        "-X",
+        "utf8",
+        "tools/verify.py",
+        "--no-build"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Course: 上位机",
+      "type": "process",
+      "command": "${workspaceFolder}/../../environment/python/python.exe",
+      "args": [
+        "-X",
+        "utf8",
+        "PC/monitor.py"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Course: 离线演示",
+      "type": "process",
+      "command": "${workspaceFolder}/../../environment/python/python.exe",
+      "args": [
+        "-X",
+        "utf8",
+        "PC/monitor.py",
+        "--demo"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Course: 完整验证与双配置构建（不连接硬件）",
+      "type": "process",
+      "command": "${workspaceFolder}/../../environment/python/python.exe",
+      "args": [
+        "-X",
+        "utf8",
+        "tools/verify.py"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

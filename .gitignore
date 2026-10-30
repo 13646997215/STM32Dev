@@ -1,0 +1,12 @@
+# Generated builds, tests and machine-local material
+/build/
+/test-results/
+/PC/runs/
+/PC/*.csv
+**/__pycache__/
+*.py[cod]
+/.agents/
+/.settings/
+*.log
+.env
+.env.*

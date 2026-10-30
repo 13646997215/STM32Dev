@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "stlinkgdbtarget",
+      "request": "launch",
+      "name": "STM32Cube: Course ST-Link",
+      "origin": "snippet",
+      "cwd": "${workspaceFolder}",
+      "preBuild": "${command:st-stm32-ide-debug-launch.build}",
+      "runEntry": "main",
+      "deviceName": "STM32F401CCU6",
+      "serverInterface": "SWD",
+      "liveWatch": {
+        "enabled": true,
+        "samplesPerSecond": "4"
+      },
+      "imagesAndSymbols": [
+        {
+          "imageFileName": "${workspaceFolder}/build/Debug/F401_COURSE.elf"
+        }
+      ]
+    }
+  ]
+}

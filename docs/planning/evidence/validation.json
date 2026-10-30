@@ -1,0 +1,38 @@
+{
+  "document_validation": "passed",
+  "course_files_indexed": 15,
+  "pptx_slides_text_extracted": 164,
+  "tables": {
+    "requirements.csv": 44,
+    "risk-register.csv": 64
+  },
+  "markdown_links_checked": 5,
+  "baseline_files_unchanged": 123,
+  "added_baseline_files": 0,
+  "numerical_crosschecks": {
+    "tilt_deg_30mm_over1600mm": 1.0743588228541847,
+    "wheel_diameter_m_user": 0.067,
+    "wheel_circumference_mm": 210.48670779051614,
+    "existing_GY953_frame_sum8": "BD",
+    "existing_GY953_frame_angles_deg": [
+      -14,
+      -11.51,
+      -87.33
+    ]
+  },
+  "scope": {
+    "production_source_modified": false,
+    "new_firmware_built": false,
+    "flashing_or_debugger_connection": false,
+    "hardware_motion": false,
+    "new_algorithm_behavior_tests_executed": false
+  },
+  "remaining_uncertainties": [
+    "teacher_rule_clarifications",
+    "geometry_placeholders_not_measured",
+    "actual_gear_ratio_and_PPR",
+    "minimum_controllable_motion_and_drift",
+    "absolute_position_observability_with_existing_hardware",
+    "host_C_test_environment_before_implementation"
+  ]
+}

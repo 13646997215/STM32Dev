@@ -1,0 +1,45 @@
+﻿id,category,requirement,software_status,evidence
+R01,器材,控制器与PC双向串口通信20分,已实现软件；集成实物待测,wire/app/runtime + PC + test_wire/test_runtime/test_interop
+R02,器材,控制电机正反转20分,已实现软件；基础实物历史通过，集成待测,control/board + test_control
+R03,器材,电机转速闭环20分,已实现软件；PI整定/绝对转速待测,control + test_control + PC CSV
+R04,器材,PC观测九轴数据20分,厂家上位机历史通过；新GUI实物待测,PC/monitor.py + test_pc
+R05,器材,控制器读取九轴20分,已实现解码；控制板读取实物待测,imu + test_imu + 实采帧fixture
+R06,任务1,无配重A出发60秒内至C附近以失衡为准,已实现分支；真实倾覆/时限待测,mission PROFILE_A + test_mission
+R07,任务2,距A约300mm区域; 裁判指定朝向; 自主上板并完成1,部分：已知声明起点可规划；未知任意位置不可观测,mission PROFILE_ENTRY + limitations
+R08,任务3,完成2后使板平衡并连续保持10秒,已实现软件连续10s；真实端高差待测,balance + test_balance/test_mission
+R09,任务3,90秒内完成且STM32 LED明显平衡指示,已实现90s与LED；规则计时起点待确认,mission/runtime + limitations
+R10,任务4,完成3后60秒内回A且LED明显到达指示,已实现返回60s与LED；真实到达待测,mission PROFILE_BALANCE_RETURN
+R11,任务4,停A斜板±200mm; 任意部件投影符合,已实现估计坐标返回；真实投影需标定/实拍,configuration return_x + bringup
+R12,任务4,到A斜板前任意部件不离板面垂直投影,部分：当前包络检查；制动/全外廓边界未实测,Course_Inside + limitations
+R13,任务5,20%–50%质量配重置A-C指定可达位置; 自主完成3/4,已实现带配重分支；质量/位置矩阵待实测,PROFILE_WEIGHT_RETURN + bringup
+R14,任务6,平衡状态再加20%–50%配重再次自主平衡,已实现扰动重平衡；5至6衔接规则待确认,PROFILE_REWEIGHT + test_mission
+R15,现场限制,不允许现场调试和修改设置; 加载位置可达,已实现运行锁参数与单固件,app + test_app/test_safety
+R16,任务7,顺时针ABCD A一圈后逆时针ADCB A一圈,已实现CW/CCW两圈与停靠；实际路线待测,PROFILE_RECTANGLE + rectangle-dock-red/final-c
+R17,任务7,起终同一指定轮停直径40mm圈; 压线扣5分,部分：指定轮最终坐标检查；真实40mm/压线待验,Motion_WheelPoint + limitations
+R18,任务7,场地/指定轮现场确定; 不现场修改设置,规则待确认；预先参数化已具备,configuration + limitations
+R19,共同限制,不在板或地面增加引导措施; 虚线不存在,方案不依赖新增引导设施,architecture + hardware-contract
+R20,共同限制,自主测试中无人为暂停/重启/切换,已实现AUTO本地运行与锁模式；正式测试待验,app + test_app
+R21,共同限制,矩形区域轴线与板轴一致; 初始位置学生能否选,合法初始化规则待确认,limitations
+R22,共同限制,板1600×300mm; 运动在长边框内; 斜板细节按实物,已参数化尺寸与静态包络；实际尺寸待用户完成,config + Course_Inside + bringup
+R23,平衡定义,端高差严格小于30mm; 定义保持5秒以上而任务3保持10秒,已实现更严格10s；传感器精度需真实高度对照,balance + limitations
+R24,评分流程,1至6顺序; 任一0分终止后续; 中途不能再下载,部分：单固件所有分支；没有宣称1→6自动串联已完成,limitations 规则问题2/3
+R25,评分,1/2共20; 3为20; 4为20; 5/6各15; 7为10,已核对评分；不作得分承诺,docs/planning/requirements.csv
+R26,预评,任务1: 检测失衡25分,已实现检测分支；实物待测,PROFILE_A
+R27,预评,任务2自主上板25分,已实现声明起点上板；未知位置有边界,PROFILE_ENTRY + limitations
+R28,预评,完成任务2后5秒内回A并指示25分,已实现独立5s分支；真实动作待测,PROFILE_PRELIM + test_mission
+R29,预评,板上自动正确平衡调节且无明显滞后25分,已实现短滤波平衡；实际滞后待测,balance + bringup
+R30,过程,组员分工/六次进度/到场/设计与布局等记录,软件阶段记录已提供；团队/到场事实待用户填,report-software + test-results
+R31,报告,系统框图/机械接口/传感/执行器/算法流程及方案比较,软件框图与接口已提供；机械事实待用户填,architecture/hardware-contract/report-software
+R32,报告,分步制作调试/问题/根因/解决/检验过程,失败与通过记录已保存,test-results + report-software
+R33,报告,测试方法/数据曲线/必要计算/有证据的分析与改进,日志/CSV/计算素材已提供；实测曲线待用户采集,PC/monitor.py + report-software
+R34,报告,每人心得; 正文字体行距/图表编号标题等按模板,素材已提供；个人心得和原模板排版待填,report-software
+R35,用户范围,机械由用户设计; 我负责软件; 轮径67mm,已按软件职责与67mm集中配置,config + configuration
+R36,用户硬件,GY953只有1个; 电机/蓝牙/控制板/TTL各两个; 无其他硬件,已按一个IMU和备用模块规划,hardware-contract
+R37,软件契约,轮距/外廓/前进符号/PPR/指定轮偏移集中可改,已实现参数校验及标志失效/启动门控,config/app + test_config/test_safety
+R38,GUI学习,VS Code STM32扩展图形构建下载调试; 保留AI扩展,VS Code配置与GUI指引已准备；新工程GUI现场待验,.vscode + vscode-guide
+R39,软件安全,默认0/受控换向/状态锁定/故障处理/不自启动,已实现软件归零/换向/锁定；外部缺省安全未测,control/app/board + bringup
+R40,通信健壮,流式有界解析/校验/重同步/时间戳/失效语义,已实现协议与有界流解析；DMA硬件时序待测,imu/wire/board + test_imu/test_wire
+R41,控制正确,唯一轮速控制器; 分层外环; dt/抗饱和/最小步长验证,已实现唯一轮速PI/外环/dt/抗饱和；参数待测,control/balance + test_control/test_balance
+R42,软件质量,TDD实际运行/编码保持/构建目标收录/备份/分层验证,TDD日志/软件验证/构建/基线检查已提供,tools/verify.py + verification.json
+R43,能力边界,FG无独立方向; IMU无直接平面位置; 不承诺不可观测精度,显式输出方向假设及滑行位；不承诺绝对定位,app telemetry + PC + limitations
+R44,无线用途,研发无线观察; MANUAL超时停; AUTO本地自主不依赖链路,已实现MANUAL超时/AUTO独立；硬件断线测试待测,app + test_app
