@@ -37,7 +37,7 @@ static void orientation(CourseApp *a)
 static MissionInput input(const CourseApp *a,uint32_t now)
 {
     MissionInput in;memset(&in,0,sizeof(in));in.now_ms=now;in.imu_seq=a->imu.euler_seq;
-    in.pose=a->pose;in.pitch_deg=a->pitch;in.yaw_rad=a->yaw;
+    in.position_epoch=a->position_epoch;in.pose=a->pose;in.pitch_deg=a->pitch;in.yaw_rad=a->yaw;
     in.imu_valid=(uint8_t)Imu_Fresh(&a->imu,now,a->config.imu_timeout_ms);in.pose_valid=a->pose.valid;return in;
 }
 uint8_t App_Command(CourseApp *a,const WireFrame *f,uint32_t now)
@@ -184,17 +184,25 @@ void App_Step(CourseApp *a,const FgCapture fg[2],uint32_t now,uint32_t us)
             max_count++;
             if((a->pose.initialized&&count>max_count)||
                (a->speed[i].fresh&&a->speed[i].hz*60.0f>a->config.max_rpm*a->config.ppr[i]*1.5f)){
-                a->warnings|=1U;
+                a->warnings|=1U;a->position_epoch++;
                 /* Discard this interval, rebase to the observed counter, and
                    report uncertain position without inventing partner pulses. */
                 a->pose.last_count[i]=fg[i].total;
             }
         }
         fg=filtered;
+        /* A wheel commanded to run without fresh feedback cannot support a
+           relative midpoint estimate. This is a warning/reset, not a stop. */
+        if(a->mission.state==MS_BALANCE||a->mission.state==MS_HOLD){
+            for(i=0;i<2;i++)if(a->motor[i].phase==MOTOR_RUN&&a->motor[i].duty>0&&
+                (uint32_t)(now-a->motor[i].run_ms)>500U&&!a->speed[i].fresh){
+                a->warnings|=1U;a->position_epoch++;
+            }
+        }
         if(!Imu_Fresh(&a->imu,now,a->config.imu_timeout_ms)||!Course_Finite(a->pitch)||!Course_Finite(a->yaw)||fabsf(a->pitch)>a->config.max_tilt_deg){
             a->warnings|=(!Course_Finite(a->pitch)||!Course_Finite(a->yaw)||!Imu_Fresh(&a->imu,now,a->config.imu_timeout_ms))?4U:32U;
             for(i=0;i<2;i++){a->pwm[i]=0;a->motor[i].duty=0;a->motor[i].ramp_rpm=0;a->pose.last_count[i]=fg[i].total;}
-            Balance_Reset(&a->mission.balance);return;
+            Balance_Reset(&a->mission.balance);memset(&a->mission.midpoint,0,sizeof(a->mission.midpoint));return;
         }
     }
     /* Task1 is constrained to the declared deck axis; magnetic Yaw is observation only. */
@@ -203,7 +211,7 @@ void App_Step(CourseApp *a,const FgCapture fg[2],uint32_t now,uint32_t us)
     else if(a->armed)Pose_Update(&a->pose,fg,a->direction,a->direction_known,wheels[0],&a->config);
     else {a->pose.last_count[0]=fg[0].total;a->pose.last_count[1]=fg[1].total;}
     if(a->armed&&a->mode==MODE_AUTO&&!a->pose.valid){
-        a->warnings|=128U;
+        a->warnings|=128U;a->position_epoch++;
         Pose_Reset(&a->pose,a->pose.x,a->pose.y,wheels[0],fg);
     }
     if(a->armed&&a->mode!=MODE_AUTO&&(uint32_t)(now-a->last_cmd_ms)>500U){App_Stop(a,0);return;}
@@ -271,7 +279,7 @@ void App_StartUnified(CourseApp *a,uint32_t now)
     a->have_yaw=0;
     orientation(a);
     a->pose.x=a->pose.y=0;a->pose.yaw=a->yaw;a->pose.valid=1;a->pose.initialized=0;
-    in.now_ms=now;in.imu_seq=a->imu.euler_seq;in.pose=a->pose;
+    in.now_ms=now;in.imu_seq=a->imu.euler_seq;in.position_epoch=a->position_epoch;in.pose=a->pose;
     in.pitch_deg=a->pitch;in.yaw_rad=a->yaw;
     in.imu_valid=(uint8_t)Imu_Fresh(&a->imu,now,a->config.imu_timeout_ms);in.pose_valid=1;
     if(!Mission_Start(&a->mission,PROFILE_BALANCE_RETURN,&in,&a->config))return;

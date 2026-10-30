@@ -29,6 +29,33 @@ int Mission_TipDetected(Mission *m,float pitch,int ready,uint32_t now,const Robo
     }
     m->tip_tracking=0;return 0;
 }
+/* Experimental: midpoint of two requested reversal locations, inferred from
+   signed single-channel odometry. Not an independent position measurement. */
+static float midpoint_trial(MidpointTrial *t,const MissionInput *in,float pid,const RobotConfig *c)
+{
+    int8_t sign=(pid>.005f)?1:((pid<-.005f)?-1:0);
+    float span,error,slow=fminf(.015f,c->max_v);
+    if(!t->initialized||t->position_epoch!=in->position_epoch){
+        memset(t,0,sizeof(*t));t->initialized=1;t->position_epoch=in->position_epoch;
+    }
+    if(t->phase==0){
+        if(sign&&t->command_sign&&sign!=t->command_sign){
+            if(!t->first_valid){t->first_x=in->pose.x;t->first_valid=1;}
+            else {
+                span=fabsf(in->pose.x-t->first_x);
+                if(span>=.02f&&span<=.50f){t->target_x=.5f*(t->first_x+in->pose.x);t->phase=1;}
+                else t->first_x=in->pose.x;
+            }
+        }
+        if(sign)t->command_sign=sign;
+    }
+    if(t->phase==1){
+        error=t->target_x-in->pose.x;
+        if(fabsf(error)<=.01f)t->phase=2;
+        else return error>0?slow:-slow;
+    }
+    return t->phase==2?Course_Clamp(pid,-slow,slow):pid;
+}
 void Mission_Update(Mission *m,const MissionInput *in,const RobotConfig *c)
 {
     uint32_t now=in->now_ms,elapsed=now-m->started_ms;MotionOutput o;
@@ -124,6 +151,10 @@ void Mission_Update(Mission *m,const MissionInput *in,const RobotConfig *c)
         break;
     case MS_BALANCE:case MS_HOLD:
         m->v=Balance_Update(&m->balance,in->pitch_deg,in->imu_seq,now,1,c);
+        if(m->profile==PROFILE_BALANCE_RETURN||m->profile==PROFILE_WEIGHT_RETURN||m->profile==PROFILE_REWEIGHT)
+            m->v=midpoint_trial(&m->midpoint,in,m->v,c);
+        /* Seeking the midpoint is motion, not a completed balance hold. */
+        if(m->midpoint.phase==1){m->balance.stable=0;m->balance.stable_tracking=0;}
         m->w=Course_Clamp(-c->heading_kp*in->yaw_rad,-c->max_w,c->max_w);
         if(m->state==MS_HOLD&&fabsf(in->pitch_deg)>=c->disturb_deg){
             m->weight_events++;m->balance_ms=now;state(m,MS_BALANCE,now);

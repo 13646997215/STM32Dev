@@ -19,9 +19,12 @@ int main(void){RobotConfig c;BalanceController b;float v,last;unsigned i;
  Balance_Reset(&b);Balance_Update(&b,0.4f,1,0,1,&c);
  v=Balance_Update(&b,-0.4f,2,20,1,&c);
  CHECK(b.rate< -8.0f);CHECK(v<0);
+ /* A board traversing level at moderate speed must keep reacting. */
+ Balance_Reset(&b);Balance_Update(&b,-0.1f,1,0,1,&c);
+ v=Balance_Update(&b,0.1f,2,20,1,&c);CHECK(fabsf(b.rate)>c.stable_rate_dps&&v>0);
  /* Balanced and quiet: stop and let the hold timer run. */
  Balance_Reset(&b);Balance_Update(&b,0.1f,1,0,1,&c);
- CHECK(Balance_Update(&b,0.2f,2,20,1,&c)==0);
+ CHECK(Balance_Update(&b,0.12f,2,20,1,&c)==0);
  CHECK(b.stable_tracking);
  /* A long positive tilt must not keep pushing positive after a sign reversal. */
  Config_ApplyMeasured(&c);c.balance_ki=.001f;Balance_Reset(&b);

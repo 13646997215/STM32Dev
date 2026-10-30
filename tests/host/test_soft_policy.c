@@ -10,7 +10,7 @@ int main(void){
  a.pose.initialized=a.pose.valid=1;a.direction_known[0]=a.direction_known[1]=1;
  a.have_control=1;a.last_control_ms=100;a.speed[1].initialized=1;a.speed[1].previous_us=100000;
  fg[1].total=50;fg[1].have_edge=fg[1].have_period=1;fg[1].last_us=105000;fg[1].period_us=5000;
- App_Step(&a,fg,110,110000);CHECK(a.armed&&a.fault==0&&(a.warnings&1U));NEAR(a.pose.x,0,.000001);
+ App_Step(&a,fg,110,110000);CHECK(a.armed&&a.fault==0&&(a.warnings&1U));CHECK(a.position_epoch>0);NEAR(a.pose.x,0,.000001);
  {uint8_t out[88];CHECK(App_Telemetry(&a,110,out,sizeof(out))==88);CHECK((Wire_GetU32(out+84)&0x101U)==0x100U);}
  a.imu.euler_ms=110;App_Step(&a,fg,400,400000);CHECK(a.armed&&a.fault==0&&a.pwm[0]==0&&a.pwm[1]==0);
  a.imu.euler_ms=410;a.imu.euler_seq++;fg[1].have_edge=0;App_Step(&a,fg,410,410000);

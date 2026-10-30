@@ -111,13 +111,20 @@ enum { PROFILE_A=1,PROFILE_ENTRY,PROFILE_BALANCE_RETURN,PROFILE_WEIGHT_RETURN,PR
 enum { MS_IDLE,MS_ALIGN,MS_APPROACH,MS_CLIMB,MS_SEEK,MS_BALANCE,MS_HOLD,MS_RETURN,MS_ARRIVED,MS_PATH,MS_DOCK,MS_DONE,MS_FAULT };
 enum { FAULT_NONE,FAULT_CONFIG,FAULT_IMU,FAULT_FEEDBACK,FAULT_TIMING,FAULT_BOUNDARY,FAULT_TIMEOUT,FAULT_TILT,FAULT_MOTOR,FAULT_UART,FAULT_STOPPED,FAULT_POSE };
 typedef struct {
-    uint32_t now_ms,imu_seq;
+    uint32_t now_ms,imu_seq,position_epoch;
     Pose pose;
     float pitch_deg,yaw_rad;
     uint8_t imu_valid,pose_valid;
 } MissionInput;
 typedef struct {
+    float first_x, target_x;
+    uint32_t position_epoch;
+    int8_t command_sign;
+    uint8_t initialized, first_valid, phase; /* 0 collect, 1 seek, 2 PID crawl */
+} MidpointTrial;
+typedef struct {
     BalanceController balance;
+    MidpointTrial midpoint;
     uint32_t started_ms,state_ms,trigger_ms,return_ms,balance_ms;
     float origin_x,origin_y,heading,initial_pitch,seek_start_x;
     float align_ref;int8_t align_sign,align_dir;
@@ -144,7 +151,7 @@ typedef struct {
     uint16_t last_start_seq;
     uint16_t bench_sequence;
     float manual[2],pwm[2],pitch,yaw,last_raw_yaw,continuous_yaw;
-    uint32_t last_yaw_seq,warnings;
+    uint32_t last_yaw_seq,warnings,position_epoch;
     uint8_t armed,mode,fault,have_control,have_yaw,have_start_seq;
     uint8_t have_bench_sequence;
     int8_t direction[2];

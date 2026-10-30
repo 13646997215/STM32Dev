@@ -76,7 +76,7 @@ float Balance_Update(BalanceController *b,float pitch,uint32_t seq,uint32_t now,
            While the board is clearly still moving, apply the D term alone as a
            D-term action using the same sign as outside the band; the hold timer only
            runs when the board is really quiet. The physical sign needs on-board tuning. */
-        if(fabsf(rate)>8.0f){
+        if(fabsf(rate)>c->stable_rate_dps){
             b->v=c->balance_sign*Course_Clamp(c->balance_kd*rate,-c->max_v,c->max_v);
             b->stable=b->stable_tracking=0;
             return b->v;
