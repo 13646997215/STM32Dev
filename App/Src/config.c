@@ -54,12 +54,13 @@ void Config_ApplyMeasured(RobotConfig *c)
        in docs/unified-task-flow.md for round 2. */
     c->wheel_diameter_m=.067f;c->track_m=.195f;
     c->ppr[0]=c->ppr[1]=738;c->wheel_scale[0]=c->wheel_scale[1]=1;
-    c->max_duty=1.0f;c->deadband[0]=c->deadband[1]=.50f;
-    c->min_duty=.50f;   /* loaded wheels need >=50% duty to break away at all */
+    c->max_duty=1.0f;c->deadband[0]=c->deadband[1]=.35f;
+    c->min_duty=.35f;   /* User reports both wheels respond at 35%; verify under load. */
     c->kp[0]=c->kp[1]=.012f;c->ki[0]=c->ki[1]=.02f;c->max_rpm=50;c->rpm_slew=60;
     c->max_v=.06f;c->min_v=.015f;
     c->yaw_sign=-1;c->pitch_sign=1;c->pitch_axis=1;
-    c->balance_kp=.010f;c->balance_ki=.001f;c->balance_kd=.012f;
+    /* Initial field-tuning trial; not a claim of closed-loop stability. */
+    c->balance_kp=.006f;c->balance_ki=.0003f;c->balance_kd=.012f;
     c->max_tilt_deg=40;c->climb_end_m=.5f;c->yaw_tol_rad=.035f;
     /* The course balance criterion is |dA-dB| < 30 mm over 1600 mm = 1.07 deg, so
        a 1.0 deg band still satisfies it while giving the on/off duty enough room

@@ -21,7 +21,7 @@ int main(void){RobotConfig c,b;float v[2];unsigned i;
  {RobotConfig m;Config_Default(&m);Config_ApplyMeasured(&m);
   CHECK(Config_Valid(&m));CHECK(m.cal_flags==CAL_PATH);
   NEAR(m.track_m,.195,1e-6);NEAR(m.ppr[0],738,1e-6);NEAR(m.max_duty,1.0,1e-6);
-  NEAR(m.deadband[0],.50,1e-6);NEAR(m.min_duty,.50,1e-6);NEAR(m.kp[0],.012,1e-6);NEAR(m.ki[0],.02,1e-6);
+  NEAR(m.deadband[0],.35,1e-6);NEAR(m.deadband[1],.35,1e-6);NEAR(m.min_duty,.35,1e-6);NEAR(m.kp[0],.012,1e-6);NEAR(m.ki[0],.02,1e-6);
   NEAR(m.max_rpm,50,1e-6);NEAR(m.rpm_slew,60,1e-6);
   NEAR(m.max_v,.06,1e-6);NEAR(m.min_v,.015,1e-6);
   NEAR(m.climb_end_m,.5,1e-6);NEAR(m.yaw_tol_rad,.035,1e-4);

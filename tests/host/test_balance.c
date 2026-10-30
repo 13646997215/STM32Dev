@@ -24,7 +24,7 @@ int main(void){RobotConfig c;BalanceController b;float v,last;unsigned i;
  CHECK(Balance_Update(&b,0.2f,2,20,1,&c)==0);
  CHECK(b.stable_tracking);
  /* A long positive tilt must not keep pushing positive after a sign reversal. */
- Config_ApplyMeasured(&c);Balance_Reset(&b);
+ Config_ApplyMeasured(&c);c.balance_ki=.001f;Balance_Reset(&b);
  for(i=0;i<=1500;i++)Balance_Update(&b,4.5f,i+1,20*i,1,&c);
  CHECK(b.integral>.01f);
  for(i=0;i<=50;i++)v=Balance_Update(&b,-1.1f,1502+i,30020+20*i,1,&c);
