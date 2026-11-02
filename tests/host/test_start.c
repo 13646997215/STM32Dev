@@ -20,7 +20,7 @@ int main(void){CourseApp a;
  NEAR(a.config.track_m,.195,1e-6);
  NEAR(a.config.deadband[0],.35,1e-6);NEAR(a.config.deadband[1],.35,1e-6);
  NEAR(a.config.min_duty,.35,1e-6);
- NEAR(a.config.balance_kp,.006,1e-6);NEAR(a.config.balance_ki,.0003,1e-7);NEAR(a.config.balance_kd,.012,1e-6);
+ NEAR(a.config.balance_kp,.006,1e-6);NEAR(a.config.balance_ki,.0012,1e-7);NEAR(a.config.balance_kd,.020,1e-6);
  NEAR(a.config.board_heading_rad,-1.5708,1e-4);
  CHECK(a.config.forward_release[0]==1&&a.config.forward_release[1]==0);
  CHECK(a.pose.valid==1&&a.pose.x==0&&a.pose.y==0);

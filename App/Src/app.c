@@ -288,7 +288,7 @@ void App_StartUnified(CourseApp *a,uint32_t now)
 }
 size_t App_Telemetry(const CourseApp *a,uint32_t now,uint8_t *p,size_t cap)
 {
-    uint32_t quality=(uint32_t)(a->pose.valid&&!(a->warnings&(1U|128U)))|((a->warnings|a->mission.warnings)<<8);unsigned i;
+    uint32_t quality=(uint32_t)(a->pose.valid&&!(a->warnings&(1U|128U)))|((a->warnings|a->mission.warnings)<<8)|((uint32_t)(a->mission.midpoint.phase&3U)<<17);unsigned i;
     if(cap<88)return 0;
     memset(p,0,88);
     p[0]=1;p[1]=a->mode;p[2]=a->armed;p[3]=a->fault;p[4]=a->mission.state;p[5]=a->mission.profile;

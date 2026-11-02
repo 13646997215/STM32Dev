@@ -7,8 +7,8 @@ PA0 自动装载的参数在 `App/Src/config.c` 的 `Config_ApplyMeasured()`：
 | 参数 | 当前试验值 | 作用 |
 |---|---:|---|
 | balance_kp | 0.006 | 倾角比例响应 |
-| balance_ki | 0.0003 | 积分响应，保留非零 |
-| balance_kd | 0.012 | 角速度响应 |
+| balance_ki | 0.0012 | 积分响应，保留非零 |
+| balance_kd | 0.020 | 角速度响应 |
 | 两路 deadband / 前馈 | 0.35 | 速度 PI 的起始占空比 |
 | min_duty | 0.35 | 非零电机输出的最低限幅 |
 

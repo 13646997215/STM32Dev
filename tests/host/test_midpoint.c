@@ -1,6 +1,6 @@
 #include "test.h"
 int main(void){Mission m={0};MissionInput in={0};RobotConfig c;unsigned i;
- Config_Default(&c);Config_ApplyMeasured(&c);in.imu_valid=in.pose_valid=in.pose.valid=1;
+ Config_Default(&c);Config_ApplyMeasured(&c);c.balance_kd=0;in.imu_valid=in.pose_valid=in.pose.valid=1;
  CHECK(Mission_Start(&m,PROFILE_BALANCE_RETURN,&in,&c));m.state=MS_BALANCE;m.balance_ms=0;
  /* Three successive commanded directions create two reversal coordinates. */
  in.pose.x=.60f;in.pitch_deg=2;in.imu_seq=1;in.now_ms=20;Mission_Update(&m,&in,&c);CHECK(m.v>0);

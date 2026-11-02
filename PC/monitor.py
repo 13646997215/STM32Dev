@@ -307,7 +307,7 @@ class Monitor:
                 age='未收到' if t['imu_age_ms']==4294967295 else f"{t['imu_age_ms']} ms"
                 self.metric_meta['attitude'].set(f'IMU age  {age}')
                 self.metric_meta['feedback'].set(f"PWM  {t['duty_l']:.2f}  /  {t['duty_r']:.2f}")
-                self.metric_meta['position'].set(f"pose_valid {t['pose_valid']}  ·  方向为假设")
+                self.metric_meta['position'].set(f"pose_valid {t['pose_valid']}  ·  中点 {t['midpoint_phase']}（0采集/1前往/2微调）")
             status=(t['mode'],t['armed'],t['state'],t['fault'])
             if status!=getattr(self,'last_control_status',None):
                 if t['fault']==7:
@@ -318,7 +318,7 @@ class Monitor:
                     self.note('任务1台架：'+('近零停止，仍监测Pitch；再次倾斜会恢复调平。' if t['state']==6 else 'Pitch调平运行；Yaw仅观察，换向前两轮先停车。'))
                 elif t['state']==11:self.note('任务完成 DONE：PWM停止并解除ARM。')
                 self.last_control_status=status
-            self.summary.set(f"mode={t['mode']} ARM={t['armed']} {state} fault={fault} flags={t['cal_flags']:02X} IMU age={t['imu_age_ms']}ms\nPitch={t['pitch_deg']:.2f}° Yaw={math.degrees(t['yaw_rad']):.2f}°  FG={t['hz_l']:.1f}/{t['hz_r']:.1f}Hz  **ΔFG={t['hz_l']-t['hz_r']:+.1f}Hz**  PWM={t['duty_l']:.2f}/{t['duty_r']:.2f}  x/y={t['x_m']:.3f}/{t['y_m']:.3f}m\npose_valid={t['pose_valid']} 方向假设位={t['direction_assumed_mask']} 滑行/换向位={t['coasting_mask']}（均非独立方向测量）")
+            self.summary.set(f"mode={t['mode']} ARM={t['armed']} {state} fault={fault} flags={t['cal_flags']:02X} IMU age={t['imu_age_ms']}ms\nPitch={t['pitch_deg']:.2f}° Yaw={math.degrees(t['yaw_rad']):.2f}°  FG={t['hz_l']:.1f}/{t['hz_r']:.1f}Hz  **ΔFG={t['hz_l']-t['hz_r']:+.1f}Hz**  PWM={t['duty_l']:.2f}/{t['duty_r']:.2f}  x/y={t['x_m']:.3f}/{t['y_m']:.3f}m\npose_valid={t['pose_valid']} 方向假设位={t['direction_assumed_mask']} 滑行/换向位={t['coasting_mask']}（均非独立方向测量）  中点阶段={t['midpoint_phase']}")
             if t['mode']==3 or not t['armed']:
                 if self.manual is not None:self.note(f'设备已解除 ARM（mode={t["mode"]} armed={t["armed"]} fault={fault}），手动续发停止。')
                 self.manual=None

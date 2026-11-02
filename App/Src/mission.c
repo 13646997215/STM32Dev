@@ -56,40 +56,6 @@ static float midpoint_trial(MidpointTrial *t,const MissionInput *in,float pid,co
     }
     return t->phase==2?Course_Clamp(pid,-slow,slow):pid;
 }
-/* Stop on a significant change away from a tilted plateau, then wait for the
-   measured pitch to settle. Thresholds are experimental, not physical proof. */
-static int pause_during_tip(Mission *m,const MissionInput *in,int debounce)
-{
-    float p=in->pitch_deg,dt,rate,change;
-    if(!m->tip_initialized){m->tip_initialized=1;m->tip_peak=m->tip_prev=p;
-        m->tip_last_seq=in->imu_seq;m->tip_last_ms=in->now_ms;return 0;}
-    if(in->imu_seq==m->tip_last_seq)return m->tip_paused;
-    dt=(float)(uint32_t)(in->now_ms-m->tip_last_ms)*.001f;
-    rate=(dt>=.005f&&dt<=.25f)?fabsf(p-m->tip_prev)/dt:1000.0f;
-    m->tip_prev=p;m->tip_last_seq=in->imu_seq;m->tip_last_ms=in->now_ms;
-    if(m->tip_paused){
-        if(rate<=1.5f){
-            if(!m->tip_quiet){m->tip_quiet=1;m->tip_quiet_since=in->now_ms;}
-            if((uint32_t)(in->now_ms-m->tip_quiet_since)>=500U){
-                m->tip_paused=m->tip_quiet=0;m->tip_peak=p;Balance_Reset(&m->balance);return 0;
-            }
-        }else m->tip_quiet=0;
-        return 1;
-    }
-    if(m->tip_peak>=0){if(p>m->tip_peak)m->tip_peak=p;change=m->tip_peak-p;}
-    else {if(p<m->tip_peak)m->tip_peak=p;change=p-m->tip_peak;}
-    if(fabsf(m->tip_peak)>=2.5f){
-        if(!m->tip_high){m->tip_high=1;m->tip_high_since=in->now_ms;}
-    }else m->tip_high=0;
-    if(m->tip_high&&change>=.5f&&(!debounce||(uint32_t)(in->now_ms-m->tip_high_since)>=300U)){
-        if(!m->tip_candidate){m->tip_candidate=1;m->tip_candidate_since=in->now_ms;}
-        if(!debounce||(uint32_t)(in->now_ms-m->tip_candidate_since)>=150U){
-            m->tip_paused=1;m->tip_quiet=0;m->tip_high=m->tip_candidate=0;return 1;
-        }
-    }else m->tip_candidate=0;
-    if(m->tip_peak*p<0)m->tip_peak=p;
-    return 0;
-}
 void Mission_Update(Mission *m,const MissionInput *in,const RobotConfig *c)
 {
     uint32_t now=in->now_ms,elapsed=now-m->started_ms;MotionOutput o;
@@ -168,9 +134,6 @@ void Mission_Update(Mission *m,const MissionInput *in,const RobotConfig *c)
         if(o.reached)state(m,MS_CLIMB,now);
         break;
     case MS_CLIMB:
-        if((m->profile==PROFILE_BALANCE_RETURN||m->profile==PROFILE_WEIGHT_RETURN||m->profile==PROFILE_REWEIGHT)&&pause_during_tip(m,in,1)){
-            Balance_Reset(&m->balance);m->balance_ms=now;state(m,MS_BALANCE,now);break;
-        }
         /* Straight run onto the board; the heading is held parallel to the board
            axis and the distance, not a pose target, decides when to stop. */
         m->v=fminf(c->max_v,.10f);
@@ -187,13 +150,13 @@ void Mission_Update(Mission *m,const MissionInput *in,const RobotConfig *c)
         }
         break;
     case MS_BALANCE:case MS_HOLD:
-        if((m->profile==PROFILE_BALANCE_RETURN||m->profile==PROFILE_WEIGHT_RETURN||m->profile==PROFILE_REWEIGHT)&&pause_during_tip(m,in,0)){
-            m->v=m->w=0;m->balance.stable=m->balance.stable_tracking=0;break;
-        }
         m->v=Balance_Update(&m->balance,in->pitch_deg,in->imu_seq,now,1,c);
         if(fabsf(in->pitch_deg)>c->stable_deg&&
            (m->profile==PROFILE_BALANCE_RETURN||m->profile==PROFILE_WEIGHT_RETURN||m->profile==PROFILE_REWEIGHT))
-            m->v=midpoint_trial(&m->midpoint,in,m->v,c);
+            {float pid=m->v;float midpoint=midpoint_trial(&m->midpoint,in,pid,c);
+             /* Rapid attitude change: preserve the PID reversal instead of
+                driving toward a stale midpoint; keep collecting candidates. */
+             m->v=(c->balance_kd>0&&fabsf(m->balance.rate)>3.0f&&pid*m->balance.rate*c->balance_sign>0)?pid:midpoint;}
         /* Seeking the midpoint is motion, not a completed balance hold. */
         if(m->midpoint.phase==1&&fabsf(in->pitch_deg)>c->stable_deg){m->balance.stable=0;m->balance.stable_tracking=0;}
         m->w=Course_Clamp(-c->heading_kp*in->yaw_rad,-c->max_w,c->max_w);

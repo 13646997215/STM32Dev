@@ -10,6 +10,11 @@ class SoftWarningTests(unittest.TestCase):
   decoded=p.decode_telemetry(data)
   self.assertEqual(decoded['warnings'],5)
   self.assertEqual(decoded['pose_valid'],0)
+  self.assertEqual(decoded['midpoint_phase'],0)
+  struct.pack_into('<I',data,84,(5<<8)|(2<<17))
+  decoded=p.decode_telemetry(data)
+  self.assertEqual(decoded['warnings'],5)
+  self.assertEqual(decoded['midpoint_phase'],2)
   alerts=smart.SmartAnalyzer().feed(decoded,now=1)['alerts']
   self.assertTrue(any('FG 脉冲异常' in a['title'] for a in alerts))
   self.assertTrue(any('IMU 曾不可用' in a['title'] for a in alerts))
