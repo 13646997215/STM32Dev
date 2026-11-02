@@ -1,0 +1,64 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Course: 软件测试（不连接硬件）",
+      "type": "process",
+      "command": "${workspaceFolder}/../../environment/python/python.exe",
+      "args": [
+        "-X",
+        "utf8",
+        "tools/run_tests.py",
+        "--label",
+        "vscode"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Course: 上位机",
+      "type": "process",
+      "command": "${workspaceFolder}/../../environment/python/python.exe",
+      "args": [
+        "-X",
+        "utf8",
+        "PC/monitor.py"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Course: 离线演示",
+      "type": "process",
+      "command": "${workspaceFolder}/../../environment/python/python.exe",
+      "args": [
+        "-X",
+        "utf8",
+        "PC/monitor.py",
+        "--demo"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Course Simple: Debug 和 Release 编译（不连接硬件）",
+      "type": "process",
+      "command": "${workspaceFolder}/../../environment/python/python.exe",
+      "args": [
+        "-X",
+        "utf8",
+        "tools/build.py"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

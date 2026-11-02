@@ -1,0 +1,9 @@
+/build/
+/test-results/
+/PC/runs/
+/PC/*.csv
+**/__pycache__/
+*.py[cod]
+*.log
+.env
+.env.*
