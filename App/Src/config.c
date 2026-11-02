@@ -60,7 +60,7 @@ void Config_ApplyMeasured(RobotConfig *c)
     c->max_v=.17f;c->min_v=.015f;
     c->yaw_sign=-1;c->pitch_sign=1;c->pitch_axis=1;
     /* Initial field-tuning trial; not a claim of closed-loop stability. */
-    c->balance_kp=.006f;c->balance_ki=.0012f;c->balance_kd=.020f;
+    c->balance_kp=.006f;c->balance_ki=.0018f;c->balance_kd=.025f;
     c->max_tilt_deg=40;c->climb_end_m=.5f;c->yaw_tol_rad=.035f;
     /* The course balance criterion is |dA-dB| < 30 mm over 1600 mm = 1.07 deg, so
        a 1.0 deg band still satisfies it while giving the on/off duty enough room
