@@ -96,7 +96,7 @@ class Monitor:
         self.arm_button=ttk.Button(line1,text='ARM 允许控制',command=lambda:self.send(4,b'\xde\xc0'));self.arm_button.pack(side='left',padx=(0,4))
         self.dock_stop_button=ttk.Button(line1,text='STOP 停止',style='Emergency.TButton',command=self.stop);self.dock_stop_button.pack(side='left',padx=(0,4))
         self.clear_button=ttk.Button(line1,text='清除故障',command=lambda:self.send(8));self.clear_button.pack(side='left',padx=(0,6))
-        self.profile=tk.StringVar(value=PROFILES[1]);self.profile_box=ttk.Combobox(line1,textvariable=self.profile,values=list(PROFILES.values()),state='readonly',width=29);self.profile_box.pack(side='left',fill='x',expand=True,padx=(0,5))
+        self.profile=tk.StringVar(value=PROFILES[3]);self.profile_box=ttk.Combobox(line1,textvariable=self.profile,values=list(PROFILES.values()),state='readonly',width=29);self.profile_box.pack(side='left',fill='x',expand=True,padx=(0,5))
         self.start_button=ttk.Button(line1,text='启动选定任务',style='Primary.TButton',command=self.start_mission);self.start_button.pack(side='left')
         line2=ttk.Frame(dock,style='Surface.TFrame');line2.pack(fill='x',pady=(2,1))
         self.left=tk.StringVar(value='0');self.right=tk.StringVar(value='0');self.unit=tk.StringVar(value='轮速 RPM')
