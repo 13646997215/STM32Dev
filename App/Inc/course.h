@@ -126,8 +126,8 @@ typedef struct {
     BalanceController balance;
     MidpointTrial midpoint;
     float tip_peak,tip_prev;
-    uint32_t tip_last_seq,tip_last_ms,tip_quiet_since;
-    uint8_t tip_initialized,tip_paused,tip_quiet;
+    uint32_t tip_last_seq,tip_last_ms,tip_quiet_since,tip_high_since,tip_candidate_since;
+    uint8_t tip_initialized,tip_paused,tip_quiet,tip_high,tip_candidate;
     uint32_t started_ms,state_ms,trigger_ms,return_ms,balance_ms;
     float origin_x,origin_y,heading,initial_pitch,seek_start_x;
     float align_ref;int8_t align_sign,align_dir;

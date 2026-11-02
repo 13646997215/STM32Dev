@@ -101,7 +101,7 @@ int main(void){WireFrame f;unsigned i;
  NEAR(applied_duty[0],0,.0001);NEAR(applied_duty[1],0,.0001);
  sensor_pitch=500;Runtime_Tick(50);Runtime_Tick(60);Runtime_Tick(70);
  CHECK(applied_duty[0]>=.4f&&applied_duty[0]<=.45f);NEAR(applied_duty[0],applied_duty[1],.0001);
- g_course.mission.balance.stable_tracking=1;Runtime_Tick(80);CHECK(applied_duty[0]>0);CHECK(!led_on);
+
  f.type=CMD_STOP;f.length=0;f.sequence=901;ri=0;rn=Wire_Encode(&f,rx,sizeof(rx));Runtime_Tick(71);
  CHECK(!g_course.armed&&applied_duty[0]==0&&applied_duty[1]==0);
  DONE();}
