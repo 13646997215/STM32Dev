@@ -107,6 +107,13 @@ float Task1_Update(BalanceController *b,float pitch,uint32_t sample_seq,uint32_t
 /* Alignment damping: rate feedback on the heading error, in seconds. */
 #define ALIGN_DAMP 0.35f
 
+/* First-flip detection uses fresh Pitch samples in a 500 ms window. */
+#define FLIP_HISTORY_SIZE 32U
+#define FLIP_WINDOW_MS 500U
+#define FLIP_MIN_PITCH_DEG 2.0f
+#define FLIP_DROP_DEG 2.0f
+#define FLIP_CONFIRM_MS 40U
+
 enum { PROFILE_A=1,PROFILE_ENTRY,PROFILE_BALANCE_RETURN,PROFILE_WEIGHT_RETURN,PROFILE_REWEIGHT,PROFILE_PRELIM,PROFILE_RECTANGLE };
 enum { MS_IDLE,MS_ALIGN,MS_APPROACH,MS_CLIMB,MS_SEEK,MS_BALANCE,MS_HOLD,MS_RETURN,MS_ARRIVED,MS_PATH,MS_DOCK,MS_DONE,MS_FAULT };
 enum { FAULT_NONE,FAULT_CONFIG,FAULT_IMU,FAULT_FEEDBACK,FAULT_TIMING,FAULT_BOUNDARY,FAULT_TIMEOUT,FAULT_TILT,FAULT_MOTOR,FAULT_UART,FAULT_STOPPED,FAULT_POSE };
@@ -129,6 +136,9 @@ typedef struct {
     float origin_x,origin_y,heading,initial_pitch,seek_start_x;
     float align_ref;int8_t align_sign,align_dir;
     float align_prev;uint32_t align_prev_ms;
+    float flip_pitch[FLIP_HISTORY_SIZE];
+    uint32_t flip_time[FLIP_HISTORY_SIZE],flip_seq,flip_candidate_ms;
+    uint8_t flip_count,flip_next,flip_has_seq,flip_candidate;
     uint8_t profile,state,previous_state,fault,path_index,tip_tracking,ramp_seen;
     uint8_t balance_achieved,weight_events;
     uint32_t warnings;
@@ -154,6 +164,7 @@ typedef struct {
     uint32_t last_yaw_seq,warnings,position_epoch;
     uint8_t armed,mode,fault,have_control,have_yaw,have_start_seq;
     uint8_t have_bench_sequence;
+    uint8_t climb_sync;
     int8_t direction[2];
     uint8_t direction_known[2]; /* Command-based assumption, retained while coasting. */
 } CourseApp;

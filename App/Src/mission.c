@@ -17,6 +17,27 @@ int Mission_TipDetected(Mission *m,float pitch,int ready,uint32_t now,const Robo
  }
  m->tip_tracking=0;return 0;
 }
+/* The robot is mounted so its front-up Pitch is positive.  Only examine new
+   samples after the configured minimum approach distance; transient single
+   samples cannot on their own confirm the beginning of a flip. */
+static int first_flip(Mission *m,const MissionInput *in,const RobotConfig *c)
+{
+ unsigned i;int falling=0;
+ if(in->pose.x<c->climb_end_m){m->flip_count=0;m->flip_next=0;m->flip_candidate=0;return 0;}
+ if(m->flip_has_seq&&in->imu_seq==m->flip_seq)return 0;
+ m->flip_has_seq=1;m->flip_seq=in->imu_seq;
+ for(i=0;i<m->flip_count;i++){
+  uint32_t age=(uint32_t)(in->now_ms-m->flip_time[i]);
+  if(age<=FLIP_WINDOW_MS&&m->flip_pitch[i]>=FLIP_MIN_PITCH_DEG&&
+     m->flip_pitch[i]-in->pitch_deg>=FLIP_DROP_DEG){falling=1;break;}
+ }
+ m->flip_pitch[m->flip_next]=in->pitch_deg;m->flip_time[m->flip_next]=in->now_ms;
+ m->flip_next=(uint8_t)((m->flip_next+1U)%FLIP_HISTORY_SIZE);
+ if(m->flip_count<FLIP_HISTORY_SIZE)m->flip_count++;
+ if(!falling){m->flip_candidate=0;return 0;}
+ if(!m->flip_candidate){m->flip_candidate=1;m->flip_candidate_ms=in->now_ms;return 0;}
+ return (uint32_t)(in->now_ms-m->flip_candidate_ms)>=FLIP_CONFIRM_MS;
+}
 void Mission_Update(Mission *m,const MissionInput *in,const RobotConfig *c)
 {
  float e,rate=0,u;uint32_t now=in->now_ms;
@@ -45,7 +66,12 @@ void Mission_Update(Mission *m,const MissionInput *in,const RobotConfig *c)
   break;
  case MS_CLIMB:
   m->v=c->max_v;m->w=Course_Clamp(-c->heading_kp*in->yaw_rad,-c->max_w,c->max_w);
-  if(in->pose.x>=c->climb_end_m){Balance_Reset(&m->balance);m->balance_ms=now;set_state(m,m->profile==PROFILE_ENTRY?MS_SEEK:MS_BALANCE,now);}
+  if(m->profile==PROFILE_ENTRY&&in->pose.x>=c->climb_end_m){set_state(m,MS_SEEK,now);}
+  else if(m->profile!=PROFILE_ENTRY&&first_flip(m,in,c)){
+   Balance_Reset(&m->balance);m->balance_ms=now;set_state(m,MS_BALANCE,now);
+   m->v=Balance_Update(&m->balance,in->pitch_deg,in->imu_seq,now,1,c);
+   if(fabsf(in->pitch_deg)>c->stable_deg)m->w=Course_Clamp(-c->heading_kp*in->yaw_rad,-c->max_w,c->max_w);
+  }
   break;
  case MS_BALANCE:
   m->v=Balance_Update(&m->balance,in->pitch_deg,in->imu_seq,now,1,c);

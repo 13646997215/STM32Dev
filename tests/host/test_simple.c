@@ -5,10 +5,13 @@ int main(void){RobotConfig c;Mission m={0};MissionInput in={0};unsigned i;float 
  in.yaw_rad=.01f;in.now_ms=20;in.imu_seq=1;Mission_Update(&m,&in,&c);
  in.now_ms=600;in.imu_seq++;Mission_Update(&m,&in,&c);CHECK(m.state==MS_CLIMB);
  in.pose.x=.1f;in.pitch_deg=4;in.now_ms=620;in.imu_seq++;Mission_Update(&m,&in,&c);CHECK(m.v>.1f);
- in.pose.x=.5f;in.now_ms=640;in.imu_seq++;Mission_Update(&m,&in,&c);CHECK(m.state==MS_BALANCE);
- in.pitch_deg=4;in.now_ms=660;in.imu_seq++;Mission_Update(&m,&in,&c);v=m.v;CHECK(v>0);
+ in.pose.x=.5f;in.now_ms=640;in.imu_seq++;Mission_Update(&m,&in,&c);CHECK(m.state==MS_CLIMB);
+ in.now_ms=660;in.imu_seq++;Mission_Update(&m,&in,&c);CHECK(m.state==MS_CLIMB);
+ in.pitch_deg=1.8f;in.now_ms=680;in.imu_seq++;Mission_Update(&m,&in,&c);
+ in.now_ms=720;in.imu_seq++;Mission_Update(&m,&in,&c);CHECK(m.state==MS_BALANCE);
+ in.pitch_deg=4;in.now_ms=740;in.imu_seq++;Mission_Update(&m,&in,&c);v=m.v;CHECK(v>0);
  m.midpoint.initialized=1;m.midpoint.phase=1;m.midpoint.target_x=-1;
- in.now_ms=680;in.imu_seq++;Mission_Update(&m,&in,&c);CHECK(m.v>0);
+ in.now_ms=760;in.imu_seq++;Mission_Update(&m,&in,&c);CHECK(m.v>0);
  in.pitch_deg=0;for(i=0;i<=540;i++){in.now_ms+=20;in.imu_seq++;Mission_Update(&m,&in,&c);}
  CHECK(m.state==MS_RETURN);CHECK(m.balance_achieved);
 

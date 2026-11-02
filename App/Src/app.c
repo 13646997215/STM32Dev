@@ -11,6 +11,7 @@ void App_Init(CourseApp *a)
 void App_Stop(CourseApp *a,uint8_t fault)
 {
     unsigned i;a->armed=0;a->mode=MODE_DIAGNOSTIC;
+    a->climb_sync=0;
     if(fault)a->fault=fault;
     for(i=0;i<2;i++){
         int8_t direction=a->motor[i].direction;
@@ -164,7 +165,7 @@ static void bench_step(CourseApp *a,const FgCapture fg[2],uint32_t now,uint32_t 
 }
 void App_Step(CourseApp *a,const FgCapture fg[2],uint32_t now,uint32_t us)
 {
-    float dt=.01f,rpm[2]={0,0},wheels[2],meas[2];uint8_t bad[2];unsigned i;MissionInput in;FgCapture filtered[2];
+    float dt=.01f,rpm[2]={0,0},wheels[2],meas[2];uint8_t bad[2],old_state;unsigned i;MissionInput in;FgCapture filtered[2];
     if(a->have_control){uint32_t d=now-a->last_control_ms;if(!d)return;
         if(d>50U&&a->armed){if(a->mode!=MODE_AUTO){App_Stop(a,FAULT_TIMING);a->last_control_ms=now;return;}a->warnings|=8U;d=50U;}dt=(float)d*.001f;}
     a->last_control_ms=now;a->have_control=1;
@@ -218,10 +219,15 @@ void App_Step(CourseApp *a,const FgCapture fg[2],uint32_t now,uint32_t us)
     }
     if(a->armed&&a->mode!=MODE_AUTO&&(uint32_t)(now-a->last_cmd_ms)>500U){App_Stop(a,0);return;}
     if(a->armed&&a->mode==MODE_AUTO){
-        in=input(a,now);Mission_Update(&a->mission,&in,&a->config);
+        old_state=a->mission.state;in=input(a,now);Mission_Update(&a->mission,&in,&a->config);
+        if(old_state==MS_ALIGN&&a->mission.state==MS_CLIMB)a->climb_sync=1;
+        if(a->mission.state!=MS_CLIMB)a->climb_sync=0;
         if(a->mission.fault){App_Stop(a,a->mission.fault);return;}
         if(a->mission.state==MS_DONE||a->mission.state==MS_ARRIVED){App_Stop(a,0);return;}
         Course_Mix(a->mission.v,a->mission.w,a->config.track_m,a->config.max_v,wheels);
+        /* Keep equal startup targets while both direction interlocks settle.
+           Heading correction resumes immediately after the synchronized release. */
+        if(a->climb_sync)wheels[0]=wheels[1]=a->mission.v;
         for(i=0;i<2;i++)rpm[i]=wheels[i]*60/(COURSE_PI*a->config.wheel_diameter_m*a->config.wheel_scale[i]);
     }else if(a->mode==MODE_MANUAL_SPEED){rpm[0]=a->manual[0];rpm[1]=a->manual[1];}
     else if(a->mode==MODE_MANUAL_DUTY){for(i=0;i<2;i++)rpm[i]=fabsf(a->manual[i])<.001f?0:(a->manual[i]>0?1:-1)*a->config.max_rpm;}
@@ -247,6 +253,16 @@ void App_Step(CourseApp *a,const FgCapture fg[2],uint32_t now,uint32_t us)
         if(a->motor[i].direction_assumed)a->direction_known[i]=1;
         a->pwm[i]=a->motor[i].duty;
         if(a->mode==MODE_MANUAL_DUTY&&a->motor[i].phase==MOTOR_RUN)a->pwm[i]=fabsf(a->manual[i]);
+    }
+    if(a->climb_sync){
+        if(a->motor[0].phase==MOTOR_RUN&&a->motor[1].phase==MOTOR_RUN&&
+           a->pwm[0]>0&&a->pwm[1]>0)a->climb_sync=0;
+        else for(i=0;i<2;i++){
+            a->pwm[i]=a->motor[i].duty=0;
+            if(a->motor[i].phase==MOTOR_RUN){
+                a->motor[i].ramp_rpm=0;a->motor[i].pi.integral=0;a->motor[i].run_ms=now;
+            }
+        }
     }
 }
 /* ---- unified round: KEY start, reference capture, task 1-6 flow ---- */
