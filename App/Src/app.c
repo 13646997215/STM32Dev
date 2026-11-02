@@ -102,12 +102,14 @@ uint8_t App_Command(CourseApp *a,const WireFrame *f,uint32_t now)
         profile=f->payload[0];
         if(profile<PROFILE_A||profile>PROFILE_RECTANGLE)return RESULT_RANGE;
         orientation(a);candidate=a->pose;
-        /* A coordinate reference is a declared setup, not a position measurement. */
-        candidate.x=(profile==PROFILE_A||profile==PROFILE_RECTANGLE)?0:a->config.start_x_m;
-        candidate.y=(profile==PROFILE_RECTANGLE||profile==PROFILE_A)?0:a->config.start_y_m;
+        /* Both launch paths use a local start reference, not absolute position. */
+        candidate.x=0;candidate.y=0;
         candidate.yaw=a->yaw;candidate.valid=1;candidate.initialized=0;
         in=input(a,now);in.pose=candidate;in.pose_valid=1;
+        if(!in.imu_valid||!Course_Finite(a->imu.euler_deg[a->config.pitch_axis]))return RESULT_NOT_READY;
+        in.pitch_deg=0;
         if(!Mission_Start(&a->mission,profile,&in,&a->config))return RESULT_NOT_READY;
+        a->config.pitch_zero_deg=a->imu.euler_deg[a->config.pitch_axis];orientation(a);
         a->pose=candidate;a->warnings=0;
         a->mode=MODE_AUTO;a->last_start_seq=f->sequence;a->have_start_seq=1;return RESULT_OK;
     }
