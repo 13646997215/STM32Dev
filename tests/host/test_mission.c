@@ -53,13 +53,13 @@ int main(void){RobotConfig c;Mission m={0};MissionInput in={0};unsigned i;
  /* A single disturbance restarts the 10 s count instead of finishing the task. */
  tick(&m,&in,&c,8100,.7f,5);
  CHECK(m.state==MS_BALANCE&&!m.balance.stable&&!m.balance_achieved);
- for(i=0;i<=520;i++)tick(&m,&in,&c,8200+20*i,.7f,0);
+ for(i=0;i<=560;i++)tick(&m,&in,&c,8200+20*i,.7f,0);
  CHECK(m.state==MS_RETURN&&m.balance_achieved);
  /* Retreat: latch the tilted deck first, then finish once the pitch is flat. */
- tick(&m,&in,&c,19000,.7f,0.5f);CHECK(m.state==MS_RETURN&&m.v<0&&!m.ramp_seen);
- for(i=0;i<=18;i++)tick(&m,&in,&c,19020+20*i,.7f,5);
+ tick(&m,&in,&c,20000,.7f,0.5f);CHECK(m.state==MS_RETURN&&m.v<0&&!m.ramp_seen);
+ for(i=0;i<=18;i++)tick(&m,&in,&c,20020+20*i,.7f,5);
  CHECK(m.state==MS_RETURN&&m.ramp_seen);
- for(i=0;i<=60;i++)tick(&m,&in,&c,20000+20*i,.7f,0.5f);
+ for(i=0;i<=60;i++)tick(&m,&in,&c,21000+20*i,.7f,0.5f);
  CHECK(m.state==MS_ARRIVED&&m.v==0);
  /* Distance fallback stops the retreat but cannot prove that the car arrived. */
  memset(&in,0,sizeof(in));in.imu_valid=in.pose_valid=in.pose.valid=1;
@@ -76,7 +76,7 @@ int main(void){RobotConfig c;Mission m={0};MissionInput in={0};unsigned i;
  in.now_ms=0;in.pose.x=0;CHECK(Mission_Start(&m,PROFILE_REWEIGHT,&in,&c));m.state=MS_BALANCE;
  for(i=0;i<=501;i++)tick(&m,&in,&c,20*i,.7f,0);CHECK(m.state==MS_HOLD);
  tick(&m,&in,&c,10060,.7f,3);CHECK(m.state==MS_BALANCE&&m.weight_events==1);
- for(i=0;i<=520;i++)tick(&m,&in,&c,10080+20*i,.7f,0);
+ for(i=0;i<=560;i++)tick(&m,&in,&c,10080+20*i,.7f,0);
  CHECK(m.state==MS_RETURN&&m.weight_events==1&&m.fault==0);
  in.now_ms=0;in.pitch_deg=0;in.pose.x=0;CHECK(Mission_Start(&m,PROFILE_PRELIM,&in,&c));m.state=MS_RETURN;m.return_ms=100;
  tick(&m,&in,&c,5101,.7f,0);CHECK(m.state==MS_FAULT&&m.fault==FAULT_TIMEOUT);

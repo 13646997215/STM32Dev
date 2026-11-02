@@ -65,11 +65,13 @@ void Runtime_Tick(uint32_t now)
     g_rpm_r=(g_course.config.ppr[1]>0)?g_course.speed[1].hz*60.0f/g_course.config.ppr[1]:0;
     g_rpm_diff=g_rpm_l-g_rpm_r;
     Board_Apply(g_course.pwm,g_course.direction,&g_course.config);
-    /* Lit as soon as the attitude is inside the balance band (that is the "it is
-       balanced now" indication), blinking while retreating, steady at the end. */
-    Board_Led(g_course.fault?((now/150U)&1U):
+    /* LED indicates an unpowered and apparently stationary condition. FG is
+       single-channel and cannot guarantee physical standstill or braking. */
+    Board_Led(g_course.pwm[0]==0&&g_course.pwm[1]==0&&
+        g_course.speed[0].hz<1.0f&&g_course.speed[1].hz<1.0f&&
+        (g_course.fault?((now/150U)&1U):
         (g_course.mission.state==MS_RETURN?((now/250U)&1U):
-        (g_course.mission.balance.stable_tracking||g_course.mission.state==MS_ARRIVED||g_course.mission.state==MS_DONE)));
+        (g_course.mission.balance.stable_tracking||g_course.mission.state==MS_ARRIVED||g_course.mission.state==MS_DONE))));
     if((uint32_t)(now-telemetry_ms)>=50U){
         telemetry_ms=now;memset(&f,0,sizeof(f));f.type=MSG_TELEMETRY;f.sequence=tx_seq++;
         f.length=(uint16_t)App_Telemetry(&g_course,now,f.payload,sizeof(f.payload));send_frame(&f);

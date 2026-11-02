@@ -6,7 +6,7 @@ static uint8_t rx[256],tx[256],imu_rx[1024],last_query[3];
 static size_t rn,ri,tn,imu_rn,imu_ri;
 static unsigned apply,stops,queries,toggles,nonzero;
 static float applied_duty[2];
-static int key,respond=1,accept_query=1,corrupt_response;static uint32_t errors;
+static int led_on;static int key,respond=1,accept_query=1,corrupt_response;static uint32_t errors;
 static int16_t sensor_pitch;
 void Board_Init(void){} uint32_t Board_Micros(void){return 1000;}
 int Board_Read(unsigned port,uint8_t*b){
@@ -34,7 +34,7 @@ int Board_Write(unsigned port,const uint8_t*p,size_t n){
 }
 void Board_Snapshot(FgCapture*f){memset(f,0,2*sizeof(*f));}
 void Board_Apply(const float*d,const int8_t*s,const RobotConfig*c){(void)s;(void)c;apply++;applied_duty[0]=d[0];applied_duty[1]=d[1];if(d[0]!=0||d[1]!=0)nonzero++;}
-void Board_Stop(void){stops++;}void Board_Led(int on){(void)on;}int Board_Key(void){return key;}
+void Board_Stop(void){stops++;}void Board_Led(int on){led_on=on;}int Board_Key(void){return key;}
 uint32_t Board_Errors(void){return errors;}void Board_Fatal(void){stops++;}
 static void reset_fixture(void){
  rn=ri=tn=imu_rn=imu_ri=0;apply=stops=queries=toggles=nonzero=0;
@@ -101,6 +101,7 @@ int main(void){WireFrame f;unsigned i;
  NEAR(applied_duty[0],0,.0001);NEAR(applied_duty[1],0,.0001);
  sensor_pitch=500;Runtime_Tick(50);Runtime_Tick(60);Runtime_Tick(70);
  CHECK(applied_duty[0]>=.4f&&applied_duty[0]<=.45f);NEAR(applied_duty[0],applied_duty[1],.0001);
+ g_course.mission.balance.stable_tracking=1;Runtime_Tick(80);CHECK(applied_duty[0]>0);CHECK(!led_on);
  f.type=CMD_STOP;f.length=0;f.sequence=901;ri=0;rn=Wire_Encode(&f,rx,sizeof(rx));Runtime_Tick(71);
  CHECK(!g_course.armed&&applied_duty[0]==0&&applied_duty[1]==0);
  DONE();}
