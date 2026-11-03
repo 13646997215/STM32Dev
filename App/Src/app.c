@@ -39,7 +39,8 @@ static MissionInput input(const CourseApp *a,uint32_t now)
 {
     MissionInput in;memset(&in,0,sizeof(in));in.now_ms=now;in.imu_seq=a->imu.euler_seq;
     in.position_epoch=a->position_epoch;in.pose=a->pose;in.pitch_deg=a->pitch;in.yaw_rad=a->yaw;
-    in.imu_valid=(uint8_t)Imu_Fresh(&a->imu,now,a->config.imu_timeout_ms);in.pose_valid=a->pose.valid;return in;
+    in.imu_valid=(uint8_t)Imu_Fresh(&a->imu,now,a->config.imu_timeout_ms);in.pose_valid=a->pose.valid;
+    in.center_feedback_valid=(uint8_t)(a->speed[0].fresh&&a->speed[1].fresh&&a->direction_known[0]&&a->direction_known[1]);return in;
 }
 uint8_t App_Command(CourseApp *a,const WireFrame *f,uint32_t now)
 {
@@ -300,14 +301,14 @@ void App_StartUnified(CourseApp *a,uint32_t now)
     a->pose.x=a->pose.y=0;a->pose.yaw=a->yaw;a->pose.valid=1;a->pose.initialized=0;
     in.now_ms=now;in.imu_seq=a->imu.euler_seq;in.position_epoch=a->position_epoch;in.pose=a->pose;
     in.pitch_deg=a->pitch;in.yaw_rad=a->yaw;
-    in.imu_valid=(uint8_t)Imu_Fresh(&a->imu,now,a->config.imu_timeout_ms);in.pose_valid=1;
+    in.imu_valid=(uint8_t)Imu_Fresh(&a->imu,now,a->config.imu_timeout_ms);in.pose_valid=1;in.center_feedback_valid=0;
     if(!Mission_Start(&a->mission,PROFILE_BALANCE_RETURN,&in,&a->config))return;
     a->armed=1;a->mode=MODE_AUTO;a->last_cmd_ms=now;a->last_start_seq=0;a->have_start_seq=0;
     a->have_control=0;a->have_bench_sequence=0;a->bench_sequence=0;
 }
 size_t App_Telemetry(const CourseApp *a,uint32_t now,uint8_t *p,size_t cap)
 {
-    uint32_t quality=(uint32_t)(a->pose.valid&&!(a->warnings&(1U|128U)))|((a->warnings|a->mission.warnings)<<8)|((uint32_t)(a->mission.midpoint.phase&3U)<<17);unsigned i;
+    uint32_t quality=(uint32_t)(a->pose.valid&&!(a->warnings&(1U|128U)))|((a->warnings|a->mission.warnings)<<8)|((uint32_t)(a->mission.midpoint.phase&3U)<<17)|((uint32_t)(a->mission.center_started!=0)<<19)|((uint32_t)(a->mission.center_invalid!=0)<<20);unsigned i;
     if(cap<88)return 0;
     memset(p,0,88);
     p[0]=1;p[1]=a->mode;p[2]=a->armed;p[3]=a->fault;p[4]=a->mission.state;p[5]=a->mission.profile;

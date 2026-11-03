@@ -109,6 +109,10 @@ float Task1_Update(BalanceController *b,float pitch,uint32_t sample_seq,uint32_t
 #define ALIGN_HOLD_MS 1000U
 #define CLIMB_HEADING_GAIN_MULTIPLIER 3.0f
 #define RETURN_HEADING_GAIN_MULTIPLIER 3.0f
+/* Odometry-only lateral correction: rad/s per metre, limited independently. */
+#define CENTER_KP 2.0f
+#define CENTER_MAX_W 0.12f
+#define CENTER_DEADBAND_M 0.005f
 
 /* Balance-only linear and wheel speed limits (m/s); field tuning required. */
 #define BALANCE_SPEED_NEAR 0.025f
@@ -130,7 +134,7 @@ typedef struct {
     uint32_t now_ms,imu_seq,position_epoch;
     Pose pose;
     float pitch_deg,yaw_rad;
-    uint8_t imu_valid,pose_valid;
+    uint8_t imu_valid,pose_valid,center_feedback_valid;
 } MissionInput;
 typedef struct {
     float first_x, target_x;
@@ -151,6 +155,8 @@ typedef struct {
     uint8_t profile,state,previous_state,fault,path_index,tip_tracking,ramp_seen;
     uint8_t balance_achieved,weight_events;
     uint32_t warnings;
+    uint32_t center_epoch;
+    uint8_t center_started,center_invalid;
     float v,w;
 } Mission;
 int Mission_Start(Mission *m,uint8_t profile,const MissionInput *in,const RobotConfig *c);

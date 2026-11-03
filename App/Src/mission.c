@@ -6,8 +6,20 @@ int Mission_Start(Mission *m,uint8_t profile,const MissionInput *in,const RobotC
 {
  if(profile<PROFILE_A||profile>PROFILE_REWEIGHT||!Config_Valid(c)||!in->imu_valid||!in->pose_valid||(c->cal_flags&CAL_PATH)!=CAL_PATH)return 0;
  memset(m,0,sizeof(*m));m->profile=profile;m->started_ms=in->now_ms;m->initial_pitch=in->pitch_deg;
- m->origin_x=in->pose.x;m->align_ref=fabsf(in->yaw_rad);
+ m->origin_x=in->pose.x;m->origin_y=in->pose.y;m->center_epoch=in->position_epoch;m->align_ref=fabsf(in->yaw_rad);
  set_state(m,profile==PROFILE_A?MS_SEEK:MS_ALIGN,in->now_ms);return 1;
+}
+/* y is an odometry estimate relative to the starting line, not a bridge-edge
+   sensor. Once the estimate loses information it cannot be repaired in-round. */
+static float center_correction(Mission *m,const MissionInput *in,float v)
+{
+ float error;
+ if(in->position_epoch!=m->center_epoch||!in->pose_valid||!in->pose.valid||!Course_Finite(in->pose.y)||!Course_Finite(m->origin_y))m->center_invalid=1;
+ if(m->center_invalid||fabsf(v)<.001f)return 0;
+ if(!in->center_feedback_valid){if(m->center_started)m->center_invalid=1;return 0;}
+ m->center_started=1;error=in->pose.y-m->origin_y;
+ if(fabsf(error)<=CENTER_DEADBAND_M)return 0;
+ return Course_Clamp((v>0?-1.0f:1.0f)*CENTER_KP*error,-CENTER_MAX_W,CENTER_MAX_W);
 }
 int Mission_TipDetected(Mission *m,float pitch,int ready,uint32_t now,const RobotConfig *c)
 {
@@ -65,25 +77,25 @@ void Mission_Update(Mission *m,const MissionInput *in,const RobotConfig *c)
   if(Mission_TipDetected(m,in->pitch_deg,1,now,c))set_state(m,MS_DONE,now);
   break;
  case MS_CLIMB:
-  m->v=c->max_v;m->w=Course_Clamp(-CLIMB_HEADING_GAIN_MULTIPLIER*c->heading_kp*in->yaw_rad,-c->max_w,c->max_w);
+  m->v=c->max_v;m->w=Course_Clamp(-CLIMB_HEADING_GAIN_MULTIPLIER*c->heading_kp*in->yaw_rad+center_correction(m,in,m->v),-c->max_w,c->max_w);
   if(m->profile==PROFILE_ENTRY&&in->pose.x>=c->climb_end_m){set_state(m,MS_SEEK,now);}
   else if(m->profile!=PROFILE_ENTRY&&first_flip(m,in,c)){
    Balance_Reset(&m->balance);m->balance_ms=now;set_state(m,MS_BALANCE,now);
    m->v=Balance_Update(&m->balance,in->pitch_deg,in->imu_seq,now,1,c);
-   if(fabsf(in->pitch_deg)>c->stable_deg)m->w=Course_Clamp(-c->heading_kp*in->yaw_rad,-c->max_w,c->max_w);
+   if(fabsf(in->pitch_deg)>c->stable_deg)m->w=Course_Clamp(-c->heading_kp*in->yaw_rad+center_correction(m,in,m->v),-c->max_w,c->max_w);
   }
   break;
  case MS_BALANCE:
   m->v=Balance_Update(&m->balance,in->pitch_deg,in->imu_seq,now,1,c);
   if(fabsf(in->pitch_deg)<=c->stable_deg)m->v=m->w=0;
-  else m->w=Course_Clamp(-c->heading_kp*in->yaw_rad,-c->max_w,c->max_w);
+  else m->w=Course_Clamp(-c->heading_kp*in->yaw_rad+center_correction(m,in,m->v),-c->max_w,c->max_w);
   if(m->balance.stable){m->balance_achieved=1;if(m->profile==PROFILE_REWEIGHT&&!m->weight_events)set_state(m,MS_HOLD,now);else {m->return_ms=now;set_state(m,MS_RETURN,now);}}
   break;
  case MS_HOLD:
   if(fabsf(in->pitch_deg)>=c->disturb_deg){m->weight_events++;Balance_Reset(&m->balance);set_state(m,MS_BALANCE,now);}
   break;
  case MS_RETURN:
-  m->v=-c->max_v;m->w=Course_Clamp(-RETURN_HEADING_GAIN_MULTIPLIER*c->heading_kp*in->yaw_rad,-c->max_w,c->max_w);
+  m->v=-c->max_v;m->w=Course_Clamp(-RETURN_HEADING_GAIN_MULTIPLIER*c->heading_kp*in->yaw_rad+center_correction(m,in,m->v),-c->max_w,c->max_w);
   if(!m->ramp_seen){if(fabsf(in->pitch_deg)>3.0f){if(!m->tip_tracking){m->tip_tracking=1;m->trigger_ms=now;}else if((uint32_t)(now-m->trigger_ms)>=300U){m->ramp_seen=1;m->tip_tracking=0;}}else m->tip_tracking=0;}
   else if(fabsf(in->pitch_deg)<1.5f){if(!m->tip_tracking){m->tip_tracking=1;m->trigger_ms=now;}else if((uint32_t)(now-m->trigger_ms)>=1000U)set_state(m,MS_ARRIVED,now);}else m->tip_tracking=0;
   break;

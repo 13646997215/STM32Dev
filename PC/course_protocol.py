@@ -49,6 +49,7 @@ def decode_telemetry(data):
     quality=result['pose_valid'];result['pose_valid']=quality&1
     result['direction_assumed_mask']=(quality>>1)&3;result['coasting_mask']=(quality>>3)&3
     result['warnings']=(quality>>8)&0x1ff;result['midpoint_phase']=(quality>>17)&3
+    result['center_started']=(quality>>19)&1;result['center_invalid']=(quality>>20)&1
     return result
 def decode_imu(data):
     if len(data)!=66:raise ValueError('Unknown IMU schema')

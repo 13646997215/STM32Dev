@@ -307,7 +307,7 @@ class Monitor:
                 age='未收到' if t['imu_age_ms']==4294967295 else f"{t['imu_age_ms']} ms"
                 self.metric_meta['attitude'].set(f'IMU age  {age}')
                 self.metric_meta['feedback'].set(f"PWM  {t['duty_l']:.2f}  /  {t['duty_r']:.2f}")
-                self.metric_meta['position'].set(f"pose_valid {t['pose_valid']}  ·  FG方向为假设")
+                self.metric_meta['position'].set(f"pose_valid {t['pose_valid']}  ·  里程参考 {'已失效' if t['center_invalid'] else ('已建立' if t['center_started'] else '等待反馈')}")
             status=(t['mode'],t['armed'],t['state'],t['fault'])
             if status!=getattr(self,'last_control_status',None):
                 if t['fault']==7:
