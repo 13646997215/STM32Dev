@@ -224,7 +224,8 @@ void App_Step(CourseApp *a,const FgCapture fg[2],uint32_t now,uint32_t us)
         if(a->mission.state!=MS_CLIMB)a->climb_sync=0;
         if(a->mission.fault){App_Stop(a,a->mission.fault);return;}
         if(a->mission.state==MS_DONE||a->mission.state==MS_ARRIVED){App_Stop(a,0);return;}
-        Course_Mix(a->mission.v,a->mission.w,a->config.track_m,a->config.max_v,wheels);
+        Course_Mix(a->mission.v,a->mission.w,a->config.track_m,
+                   a->mission.state==MS_BALANCE?a->mission.balance.speed_limit:a->config.max_v,wheels);
         /* Keep equal startup targets while both direction interlocks settle.
            Heading correction resumes immediately after the synchronized release. */
         if(a->climb_sync)wheels[0]=wheels[1]=a->mission.v;

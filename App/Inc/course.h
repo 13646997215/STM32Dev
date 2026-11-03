@@ -95,7 +95,7 @@ typedef struct { float v,w; uint8_t reached; } MotionOutput;
 MotionOutput Motion_Goto(const Pose *p,float x,float y,float final_yaw,int reverse,const RobotConfig *c);
 void Motion_WheelPoint(const Pose *p,float rx,float ry,float *x,float *y);
 typedef struct {
-    float integral,last_pitch,rate,v;
+    float integral,last_pitch,rate,v,speed_limit;
     uint32_t last_seq,last_ms,stable_since_ms;
     uint8_t initialized,stable_tracking,stable;
 } BalanceController;
@@ -106,6 +106,12 @@ float Task1_Update(BalanceController *b,float pitch,uint32_t sample_seq,uint32_t
 
 /* Alignment damping: rate feedback on the heading error, in seconds. */
 #define ALIGN_DAMP 0.35f
+
+/* Balance-only linear and wheel speed limits (m/s); field tuning required. */
+#define BALANCE_SPEED_NEAR 0.025f
+#define BALANCE_SPEED_FAR  0.070f
+#define BALANCE_SLOW_ANGLE_DEG 4.0f
+#define BALANCE_LOOKAHEAD_S 0.40f
 
 /* First-flip detection uses fresh Pitch samples in a 500 ms window. */
 #define FLIP_HISTORY_SIZE 32U
