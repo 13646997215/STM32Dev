@@ -2,6 +2,13 @@
 #include <math.h>
 #include <string.h>
 static void set_state(Mission *m,uint8_t s,uint32_t now){m->previous_state=m->state;m->state=s;m->state_ms=now;m->v=m->w=0;}
+/* Keep the heading correction smaller than half the forward wheel target.
+   Both wheel targets therefore retain the same travel direction. */
+static float heading_motion(float yaw,float v,const RobotConfig *c)
+{
+ float max_w=fminf(c->max_w,fabsf(v)/c->track_m);
+ return Course_Clamp(-c->heading_kp*yaw,-max_w,max_w);
+}
 int Mission_Start(Mission *m,uint8_t profile,const MissionInput *in,const RobotConfig *c)
 {
  if(profile<PROFILE_A||profile>PROFILE_REWEIGHT||!Config_Valid(c)||!in->imu_valid||!in->pose_valid||(c->cal_flags&CAL_PATH)!=CAL_PATH)return 0;
@@ -65,25 +72,25 @@ void Mission_Update(Mission *m,const MissionInput *in,const RobotConfig *c)
   if(Mission_TipDetected(m,in->pitch_deg,1,now,c))set_state(m,MS_DONE,now);
   break;
  case MS_CLIMB:
-  m->v=c->max_v;m->w=Course_Clamp(-c->heading_kp*in->yaw_rad,-c->max_w,c->max_w);
+  m->v=c->max_v;m->w=heading_motion(in->yaw_rad,m->v,c);
   if(m->profile==PROFILE_ENTRY&&in->pose.x>=c->climb_end_m){set_state(m,MS_SEEK,now);}
   else if(m->profile!=PROFILE_ENTRY&&first_flip(m,in,c)){
    Balance_Reset(&m->balance);m->balance_ms=now;set_state(m,MS_BALANCE,now);
    m->v=Balance_Update(&m->balance,in->pitch_deg,in->imu_seq,now,1,c);
-   if(fabsf(in->pitch_deg)>c->stable_deg)m->w=Course_Clamp(-c->heading_kp*in->yaw_rad,-c->max_w,c->max_w);
+   if(fabsf(in->pitch_deg)>c->stable_deg)m->w=heading_motion(in->yaw_rad,m->v,c);
   }
   break;
  case MS_BALANCE:
   m->v=Balance_Update(&m->balance,in->pitch_deg,in->imu_seq,now,1,c);
   if(fabsf(in->pitch_deg)<=c->stable_deg)m->v=m->w=0;
-  else m->w=Course_Clamp(-c->heading_kp*in->yaw_rad,-c->max_w,c->max_w);
+  else m->w=heading_motion(in->yaw_rad,m->v,c);
   if(m->balance.stable){m->balance_achieved=1;if(m->profile==PROFILE_REWEIGHT&&!m->weight_events)set_state(m,MS_HOLD,now);else {m->return_ms=now;set_state(m,MS_RETURN,now);}}
   break;
  case MS_HOLD:
   if(fabsf(in->pitch_deg)>=c->disturb_deg){m->weight_events++;Balance_Reset(&m->balance);set_state(m,MS_BALANCE,now);}
   break;
  case MS_RETURN:
-  m->v=-c->max_v;m->w=Course_Clamp(-c->heading_kp*in->yaw_rad,-c->max_w,c->max_w);
+  m->v=-c->max_v;m->w=heading_motion(in->yaw_rad,m->v,c);
   if(!m->ramp_seen){if(fabsf(in->pitch_deg)>3.0f){if(!m->tip_tracking){m->tip_tracking=1;m->trigger_ms=now;}else if((uint32_t)(now-m->trigger_ms)>=300U){m->ramp_seen=1;m->tip_tracking=0;}}else m->tip_tracking=0;}
   else if(fabsf(in->pitch_deg)<1.5f){if(!m->tip_tracking){m->tip_tracking=1;m->trigger_ms=now;}else if((uint32_t)(now-m->trigger_ms)>=1000U)set_state(m,MS_ARRIVED,now);}else m->tip_tracking=0;
   break;
