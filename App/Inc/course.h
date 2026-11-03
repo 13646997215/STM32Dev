@@ -105,7 +105,7 @@ float Balance_Update(BalanceController *b,float pitch,uint32_t sample_seq,uint32
 float Task1_Update(BalanceController *b,float pitch,uint32_t sample_seq,uint32_t now_ms,int valid,const RobotConfig *c);
 
 /* Alignment damping: rate feedback on the heading error, in seconds. */
-#define ALIGN_DAMP 0.35f
+#define ALIGN_DAMP 0.25f
 
 /* Balance-only linear and wheel speed limits (m/s); field tuning required. */
 #define BALANCE_SPEED_NEAR 0.025f
