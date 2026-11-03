@@ -83,7 +83,7 @@ void Mission_Update(Mission *m,const MissionInput *in,const RobotConfig *c)
   if(fabsf(in->pitch_deg)>=c->disturb_deg){m->weight_events++;Balance_Reset(&m->balance);set_state(m,MS_BALANCE,now);}
   break;
  case MS_RETURN:
-  m->v=-c->max_v;m->w=Course_Clamp(-c->heading_kp*in->yaw_rad,-c->max_w,c->max_w);
+  m->v=-c->max_v;m->w=Course_Clamp(-RETURN_HEADING_GAIN_MULTIPLIER*c->heading_kp*in->yaw_rad,-c->max_w,c->max_w);
   if(!m->ramp_seen){if(fabsf(in->pitch_deg)>3.0f){if(!m->tip_tracking){m->tip_tracking=1;m->trigger_ms=now;}else if((uint32_t)(now-m->trigger_ms)>=300U){m->ramp_seen=1;m->tip_tracking=0;}}else m->tip_tracking=0;}
   else if(fabsf(in->pitch_deg)<1.5f){if(!m->tip_tracking){m->tip_tracking=1;m->trigger_ms=now;}else if((uint32_t)(now-m->trigger_ms)>=1000U)set_state(m,MS_ARRIVED,now);}else m->tip_tracking=0;
   break;

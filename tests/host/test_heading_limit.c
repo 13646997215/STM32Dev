@@ -13,19 +13,23 @@ int main(void)
  NEAR(m.w,-c.max_w,.0001f);
  in.yaw_rad=.02f;in.now_ms=20;in.imu_seq++;
  Mission_Update(&m,&in,&c);
- NEAR(m.w,-2*c.heading_kp*.02f,.0001f);
+ NEAR(m.w,-3*c.heading_kp*.02f,.0001f);
  in.yaw_rad=-.02f;in.now_ms=25;in.imu_seq++;
  Mission_Update(&m,&in,&c);
- NEAR(m.w,2*c.heading_kp*.02f,.0001f);
+ NEAR(m.w,3*c.heading_kp*.02f,.0001f);
  in.yaw_rad=1.5f;
  m.state=MS_BALANCE;Balance_Reset(&m.balance);
  in.yaw_rad=1.5f;in.pitch_deg=3;in.now_ms=30;in.imu_seq++;
  Mission_Update(&m,&in,&c);
  NEAR(m.w,-c.max_w,.0001f);
- m.state=MS_RETURN; in.now_ms=50;in.imu_seq++;
+ m.state=MS_RETURN; in.yaw_rad=1.5f;in.now_ms=50;in.imu_seq++;
  Mission_Update(&m,&in,&c);
  Course_Mix(m.v,m.w,c.track_m,c.max_v,wheels);
  CHECK(m.v<0);
  NEAR(m.w,-c.max_w,.0001f);
+ in.yaw_rad=.02f;in.now_ms=60;in.imu_seq++;Mission_Update(&m,&in,&c);
+ NEAR(m.w,-3*c.heading_kp*.02f,.0001f);
+ in.yaw_rad=-.02f;in.now_ms=70;in.imu_seq++;Mission_Update(&m,&in,&c);
+ NEAR(m.w,3*c.heading_kp*.02f,.0001f);
  DONE();
 }

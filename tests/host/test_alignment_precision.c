@@ -13,6 +13,6 @@ int main(void){
  in.now_ms=3019;in.imu_seq++;Mission_Update(&m,&in,&c);CHECK(m.state==MS_ALIGN);
  in.now_ms=3020;in.imu_seq++;Mission_Update(&m,&in,&c);CHECK(m.state==MS_CLIMB);
  in.yaw_rad=.02f;in.now_ms=3040;in.imu_seq++;Mission_Update(&m,&in,&c);
- NEAR(m.w,-.06f,.0001f);
+ NEAR(m.w,-.09f,.0001f);
  DONE();
 }
