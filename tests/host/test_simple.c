@@ -31,8 +31,9 @@ int main(void){RobotConfig c;Mission m={0};MissionInput in={0};unsigned i;float 
  in.pitch_deg=0;for(i=0;i<=530;i++){in.now_ms+=20;in.imu_seq++;Mission_Update(&m,&in,&c);}CHECK(m.state==MS_RETURN);
  /* GUI launch and PA0 both use distance relative to the start position. */
  {CourseApp a;WireFrame f={0};App_Init(&a);Config_ApplyMeasured(&a.config);a.armed=1;
-  a.imu.have_euler=1;a.imu.euler_seq=1;a.imu.euler_ms=0;a.imu.euler_deg[1]=2;
+  a.imu.have_euler=1;a.imu.euler_seq=1;a.imu.euler_ms=0;a.imu.euler_deg[1]=2;a.scene_pitch_deg=2;
   f.type=CMD_START;f.length=1;f.payload[0]=PROFILE_BALANCE_RETURN;f.sequence=77;
+  CHECK(App_Command(&a,&f,0)==RESULT_NOT_READY);a.scene_valid=1;
   CHECK(App_Command(&a,&f,0)==RESULT_OK);NEAR(a.pose.x,0,1e-6);NEAR(a.pose.y,0,1e-6);NEAR(a.config.pitch_zero_deg,2,1e-6);
  }
  /* STOP remains available in automatic mode. */

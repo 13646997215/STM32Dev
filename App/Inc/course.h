@@ -110,9 +110,9 @@ float Task1_Update(BalanceController *b,float pitch,uint32_t sample_seq,uint32_t
 #define CLIMB_HEADING_GAIN_MULTIPLIER 3.0f
 #define RETURN_HEADING_GAIN_MULTIPLIER 3.0f
 /* Odometry-only lateral correction: rad/s per metre, limited independently. */
-#define CENTER_KP 2.0f
-#define CENTER_MAX_W 0.12f
-#define CENTER_DEADBAND_M 0.005f
+#define CENTER_KP 4.0f
+#define CENTER_MAX_W 0.20f
+#define CENTER_DEADBAND_M 0.003f
 
 /* Balance-only linear and wheel speed limits (m/s); field tuning required. */
 #define BALANCE_SPEED_NEAR 0.025f
@@ -179,6 +179,8 @@ typedef struct {
     uint32_t last_yaw_seq,warnings,position_epoch;
     uint8_t armed,mode,fault,have_control,have_yaw,have_start_seq;
     uint8_t have_bench_sequence;
+    uint8_t scene_valid;
+    float scene_yaw_deg,scene_pitch_deg;
     uint8_t climb_sync;
     int8_t direction[2];
     uint8_t direction_known[2]; /* Command-based assumption, retained while coasting. */

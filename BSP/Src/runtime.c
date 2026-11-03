@@ -1,13 +1,16 @@
 #include "runtime.h"
 #include "board.h"
 #include <string.h>
+#include <math.h>
 CourseApp g_course;
 volatile uint32_t g_runtime_max_us,g_runtime_cycles;
 volatile float g_rpm_l,g_rpm_r,g_rpm_diff;
 volatile uint32_t g_imu_query_sent,g_imu_query_failed,g_imu_last_query_ms,g_imu_last_command;
 static WireParser wire;
 static uint32_t telemetry_ms,raw_ms,errors_previous,imu_poll_ms;
-static uint32_t key_held,key_last;static uint8_t key_long_done;
+static uint32_t key_held,key_last,key_start;static uint8_t key_long_done,key_down;
+typedef struct {float pitch_sum,yaw_anchor,yaw_offset_sum,pitch_anchor,roll_anchor;uint32_t count,seq,first_ms,last_ms;uint8_t failed;} SceneCapture;
+static SceneCapture scene;
 static uint16_t tx_seq;
 static int imu_query(unsigned selector,uint32_t now)
 {
@@ -28,7 +31,7 @@ static void send_frame(WireFrame *f)
 void Runtime_Init(void)
 {
     Board_Init();Board_Stop();App_Init(&g_course);memset(&wire,0,sizeof(wire));
-    telemetry_ms=raw_ms=imu_poll_ms=key_last=0;key_held=0;key_long_done=0;errors_previous=Board_Errors();tx_seq=0;
+    telemetry_ms=raw_ms=imu_poll_ms=key_last=key_start=0;key_held=0;key_long_done=key_down=0;memset(&scene,0,sizeof(scene));errors_previous=Board_Errors();tx_seq=0;
     g_imu_query_sent=g_imu_query_failed=g_imu_last_query_ms=g_imu_last_command=0;
 }
 void Runtime_Tick(uint32_t now)
@@ -46,15 +49,40 @@ void Runtime_Tick(uint32_t now)
     /* Deterministic 50 Hz acquisition. Single reads never toggle a running stream.
        One bounded attempt per tick; real received frames alone establish freshness. */
     if((uint32_t)(now-imu_poll_ms)>=20U){imu_poll_ms=now;imu_query(2,now);}
-    /* PA0: short press starts one unified round, a 2 s hold interrupts. */
+    /* In idle, a 2 s press captures a stationary reference; during a run it stops. */
     if(Board_Key()){
-        key_held+=now-key_last;
+        if(!key_down){key_down=1;key_start=now;key_held=0;memset(&scene,0,sizeof(scene));scene.seq=g_course.imu.euler_seq;}
+        key_held=now-key_start;
+        if(!key_long_done&&!g_course.armed&&!g_course.fault&&g_course.mode==MODE_DIAGNOSTIC&&
+           g_course.imu.have_euler&&scene.seq!=g_course.imu.euler_seq){
+            float pitch=g_course.imu.euler_deg[g_course.config.pitch_axis],yaw=g_course.imu.euler_deg[2],roll=g_course.imu.euler_deg[0],offset;
+            scene.seq=g_course.imu.euler_seq;
+            if(!Course_Finite(pitch)||!Course_Finite(yaw)||!Course_Finite(roll))scene.failed=1;
+            else{
+                if(!scene.count){scene.first_ms=now;scene.pitch_anchor=pitch;scene.yaw_anchor=yaw;scene.roll_anchor=roll;}
+                else if((uint32_t)(now-scene.last_ms)>120U)scene.failed=1;
+                offset=Course_Wrap((yaw-scene.yaw_anchor)*COURSE_PI/180.0f)*180.0f/COURSE_PI;
+                if(fabsf(pitch-scene.pitch_anchor)>2.0f||fabsf(roll-scene.roll_anchor)>2.0f||fabsf(offset)>3.0f)scene.failed=1;
+                scene.pitch_sum+=pitch;scene.yaw_offset_sum+=offset;scene.last_ms=now;scene.count++;
+            }
+        }
         if(!key_long_done&&key_held>=2000U){key_long_done=1;
-            if(Key_Event(key_held,0,g_course.mission.state,g_course.armed)==KEY_STOP){App_Stop(&g_course,0);Board_Stop();}}
+            if(!g_course.armed&&!g_course.fault&&g_course.mode==MODE_DIAGNOSTIC){
+                g_course.scene_valid=0;
+                if(!scene.failed&&scene.count>=80U&&(uint32_t)(scene.last_ms-scene.first_ms)>=1800U&&
+                   (uint32_t)(now-scene.last_ms)<=120U&&Imu_Fresh(&g_course.imu,now,g_course.config.imu_timeout_ms)){
+                    g_course.scene_pitch_deg=scene.pitch_sum/(float)scene.count;
+                    g_course.scene_yaw_deg=Course_Wrap((scene.yaw_anchor+scene.yaw_offset_sum/(float)scene.count)*COURSE_PI/180.0f)*180.0f/COURSE_PI;
+                    if(!g_course.config.cal_flags)Config_ApplyMeasured(&g_course.config);
+                    g_course.config.pitch_zero_deg=g_course.scene_pitch_deg;
+                    g_course.config.board_heading_rad=Course_Wrap(g_course.scene_yaw_deg*COURSE_PI/180.0f*g_course.config.yaw_sign);
+                    g_course.scene_valid=1;
+                }
+            }else if(Key_Event(key_held,0,g_course.mission.state,g_course.armed)==KEY_STOP){App_Stop(&g_course,0);Board_Stop();}}
     }else{
-        if(key_held&&!key_long_done&&Key_Event(key_held,1,g_course.mission.state,g_course.armed)==KEY_START)
+        if(key_down&&key_held&&!key_long_done&&Key_Event(key_held,1,g_course.mission.state,g_course.armed)==KEY_START)
             App_StartUnified(&g_course,now);
-        key_held=0;key_long_done=0;
+        key_held=0;key_long_done=key_down=0;
     }
     key_last=now;
     errors=Board_Errors();if(errors!=errors_previous){if(g_course.armed&&g_course.mode==MODE_AUTO)g_course.warnings|=64U;else{App_Stop(&g_course,FAULT_UART);Board_Stop();}errors_previous=errors;}
@@ -68,7 +96,7 @@ void Runtime_Tick(uint32_t now)
     /* Preserve the original balance / return / fault indication. */
     Board_Led(g_course.fault?((now/150U)&1U):
         (g_course.mission.state==MS_RETURN?((now/250U)&1U):
-        (g_course.mission.balance.stable_tracking||g_course.mission.state==MS_ARRIVED||g_course.mission.state==MS_DONE)));
+        (!g_course.scene_valid||g_course.mission.balance.stable_tracking||g_course.mission.state==MS_ARRIVED||g_course.mission.state==MS_DONE)));
     if((uint32_t)(now-telemetry_ms)>=50U){
         telemetry_ms=now;memset(&f,0,sizeof(f));f.type=MSG_TELEMETRY;f.sequence=tx_seq++;
         f.length=(uint16_t)App_Telemetry(&g_course,now,f.payload,sizeof(f.payload));send_frame(&f);

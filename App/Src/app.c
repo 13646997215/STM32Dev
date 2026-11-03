@@ -57,10 +57,11 @@ uint8_t App_Command(CourseApp *a,const WireFrame *f,uint32_t now)
         if(f->length!=6)return RESULT_FORMAT;
         if(a->armed)return RESULT_LOCKED;
         key=(uint16_t)(f->payload[0]|((uint16_t)f->payload[1]<<8));
-        x=a->config.yaw_sign;
+        x=a->config.yaw_sign;y=(float)a->config.pitch_axis;
         if(!Config_Set(&a->config,key,Wire_GetFloat(f->payload+2)))return RESULT_RANGE;
         /* The previous raw yaw belongs to the old sign convention. */
         if(a->config.yaw_sign!=x)a->have_yaw=0;
+        if((float)a->config.pitch_axis!=y)a->scene_valid=0;
         return RESULT_OK;
     }
     if(a->fault)return RESULT_FAULT;
@@ -99,19 +100,19 @@ uint8_t App_Command(CourseApp *a,const WireFrame *f,uint32_t now)
     if(f->type==CMD_START){
         if(f->length!=1)return RESULT_FORMAT;
         if(a->have_start_seq&&f->sequence==a->last_start_seq)return RESULT_DUPLICATE;
-        if(!a->armed)return RESULT_NOT_READY;
+        if(!a->armed||!a->scene_valid)return RESULT_NOT_READY;
         if(a->mode!=MODE_DIAGNOSTIC)return RESULT_LOCKED;
         profile=f->payload[0];
         if(profile<PROFILE_A||profile>PROFILE_RECTANGLE)return RESULT_RANGE;
-        orientation(a);candidate=a->pose;
+        a->config.pitch_zero_deg=a->scene_pitch_deg;
+        a->config.board_heading_rad=Course_Wrap(a->scene_yaw_deg*COURSE_PI/180*a->config.yaw_sign);
+        a->have_yaw=0;orientation(a);candidate=a->pose;
         /* Both launch paths use a local start reference, not absolute position. */
         candidate.x=0;candidate.y=0;
         candidate.yaw=a->yaw;candidate.valid=1;candidate.initialized=0;
         in=input(a,now);in.pose=candidate;in.pose_valid=1;
         if(!in.imu_valid||!Course_Finite(a->imu.euler_deg[a->config.pitch_axis]))return RESULT_NOT_READY;
-        in.pitch_deg=0;
         if(!Mission_Start(&a->mission,profile,&in,&a->config))return RESULT_NOT_READY;
-        a->config.pitch_zero_deg=a->imu.euler_deg[a->config.pitch_axis];orientation(a);
         a->pose=candidate;a->warnings=0;
         a->mode=MODE_AUTO;a->last_start_seq=f->sequence;a->have_start_seq=1;return RESULT_OK;
     }
@@ -281,6 +282,7 @@ uint8_t Key_Event(uint32_t held_ms,int released,uint8_t state,int armed)
 void App_StartUnified(CourseApp *a,uint32_t now)
 {
     MissionInput in;
+    if(!a->scene_valid)return;
     /* Measured calibration is installed here, not in Config_Default, so the
        firmware still boots with "no calibration claimed" until a round starts.
        A config already loaded over the link (cal_flags != 0) wins: that keeps the
@@ -292,7 +294,8 @@ void App_StartUnified(CourseApp *a,uint32_t now)
     a->fault=0;a->warnings=0;a->manual[0]=a->manual[1]=0;a->pwm[0]=a->pwm[1]=0;
     /* Take the current attitude as the reference: everything afterwards is
        relative to it. Yaw stays absolute so the board heading stays meaningful. */
-    a->config.pitch_zero_deg=a->imu.euler_deg[a->config.pitch_axis];
+    a->config.pitch_zero_deg=a->scene_pitch_deg;
+    a->config.board_heading_rad=Course_Wrap(a->scene_yaw_deg*COURSE_PI/180*a->config.yaw_sign);
     /* yaw_sign was just changed by the measured configuration, so the accumulated
        continuous-yaw history belongs to the old sign; restart it from this frame
        or the displayed heading jumps by roughly twice the current yaw. */

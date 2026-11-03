@@ -12,7 +12,7 @@ int main(void){
  in.pose.y=.03f;in.position_epoch=8;m.state=MS_CLIMB;in.now_ms+=20;in.imu_seq++;Mission_Update(&m,&in,&c);NEAR(m.w,0,.0001f);
  in.position_epoch=7;in.now_ms+=20;in.imu_seq++;Mission_Update(&m,&in,&c);NEAR(m.w,0,.0001f);
  in.pose.y=0;CHECK(Mission_Start(&m,PROFILE_BALANCE_RETURN,&in,&c));m.state=MS_CLIMB;
- in.pose.y=.004f;in.now_ms+=20;in.imu_seq++;Mission_Update(&m,&in,&c);NEAR(m.w,0,.0001f);
+ in.pose.y=.002f;in.now_ms+=20;in.imu_seq++;Mission_Update(&m,&in,&c);NEAR(m.w,0,.0001f);
  in.pose.y=.30f;in.now_ms+=20;in.imu_seq++;Mission_Update(&m,&in,&c);NEAR(m.w,-CENTER_MAX_W,.0001f);
  in.center_feedback_valid=0;in.now_ms+=20;in.imu_seq++;Mission_Update(&m,&in,&c);CHECK(m.center_invalid);NEAR(m.w,0,.0001f);
  in.center_feedback_valid=1;in.now_ms+=20;in.imu_seq++;Mission_Update(&m,&in,&c);NEAR(m.w,0,.0001f);

@@ -7,7 +7,7 @@ static size_t rn,ri,tn,imu_rn,imu_ri;
 static unsigned apply,stops,queries,toggles,nonzero;
 static float applied_duty[2];
 static int led_on;static int key,respond=1,accept_query=1,corrupt_response;static uint32_t errors;
-static int16_t sensor_pitch;
+static int16_t sensor_pitch,sensor_yaw;static int yaw_fixed;
 void Board_Init(void){} uint32_t Board_Micros(void){return 1000;}
 int Board_Read(unsigned port,uint8_t*b){
  if(port==0){if(imu_ri==imu_rn)return 0;*b=imu_rx[imu_ri++];return 1;}
@@ -22,7 +22,7 @@ int Board_Write(unsigned port,const uint8_t*p,size_t n){
   if(p[1]==0x45||p[1]==0x15||p[1]==0x35)toggles++;
   if(respond&&p[0]==0xa5&&p[1]==0x95&&p[2]==0x3a){
    frame[6]=(uint8_t)((uint16_t)sensor_pitch>>8);frame[7]=(uint8_t)sensor_pitch;
-   frame[8]=(uint8_t)((queries%18000U)>>8);frame[9]=(uint8_t)(queries%18000U);
+   {uint16_t yaw=(uint16_t)(yaw_fixed?sensor_yaw:(int16_t)(queries%18000U));frame[8]=(uint8_t)(yaw>>8);frame[9]=(uint8_t)yaw;}
    for(i=0;i<10;i++)frame[10]+=frame[i];
    if(corrupt_response)frame[10]^=1;
    if(imu_ri==imu_rn)imu_ri=imu_rn=0;
@@ -38,7 +38,7 @@ void Board_Stop(void){stops++;}void Board_Led(int on){led_on=on;}int Board_Key(v
 uint32_t Board_Errors(void){return errors;}void Board_Fatal(void){stops++;}
 static void reset_fixture(void){
  rn=ri=tn=imu_rn=imu_ri=0;apply=stops=queries=toggles=nonzero=0;
- key=corrupt_response=0;sensor_pitch=0;errors=0;respond=accept_query=1;memset(last_query,0,3);Runtime_Init();
+ key=corrupt_response=yaw_fixed=0;sensor_pitch=sensor_yaw=0;errors=0;respond=accept_query=1;memset(last_query,0,3);Runtime_Init();
 }
 static void request(uint8_t selector,uint16_t seq,uint32_t now){
  WireFrame f;memset(&f,0,sizeof(f));f.type=CMD_IMU_QUERY;f.sequence=seq;f.length=1;f.payload[0]=selector;
@@ -104,4 +104,35 @@ int main(void){WireFrame f;unsigned i;
 
  f.type=CMD_STOP;f.length=0;f.sequence=901;ri=0;rn=Wire_Encode(&f,rx,sizeof(rx));Runtime_Tick(71);
  CHECK(!g_course.armed&&applied_duty[0]==0&&applied_duty[1]==0);
+ /* Scene calibration: a short press cannot start before the 2 s reference;
+    successful long press clears the pre-start LED and its pitch survives start. */
+ reset_fixture();sensor_pitch=300;
+ for(i=0;i<=100;i+=10)Runtime_Tick(i);CHECK(led_on);
+ key=1;for(i=110;i<=200;i+=10)Runtime_Tick(i);key=0;Runtime_Tick(210);CHECK(!g_course.armed);
+ key=1;for(i=220;i<=2240;i+=10)Runtime_Tick(i);CHECK(!led_on);key=0;Runtime_Tick(2250);
+ NEAR(g_course.config.pitch_zero_deg,3.0,.05);
+ sensor_pitch=500;for(i=2260;i<=2320;i+=10)Runtime_Tick(i);
+ key=1;for(i=2330;i<=2420;i+=10)Runtime_Tick(i);key=0;Runtime_Tick(2430);
+ CHECK(g_course.armed);NEAR(g_course.config.pitch_zero_deg,3.0,.05);
+ /* Missing samples cannot produce a valid reference or start the motors. */
+ reset_fixture();respond=0;for(i=0;i<=100;i+=10)Runtime_Tick(i);
+ key=1;for(i=110;i<=2150;i+=10)Runtime_Tick(i);CHECK(led_on&&!g_course.armed);
+ key=0;Runtime_Tick(2160);CHECK(nonzero==0);
+ /* Wrapped yaw around +/-180 degrees must average near 180, not zero. */
+ reset_fixture();yaw_fixed=1;sensor_yaw=17900;
+ for(i=0;i<=100;i+=10)Runtime_Tick(i);
+ key=1;for(i=110;i<=2150;i+=10){if(i>=1110)sensor_yaw=-17900;Runtime_Tick(i);}
+ CHECK(g_course.scene_valid&&fabsf(g_course.scene_yaw_deg)>178.0f);key=0;Runtime_Tick(2160);
+ /* A moving board cannot be silently accepted as a reference. */
+ reset_fixture();for(i=0;i<=100;i+=10)Runtime_Tick(i);
+ key=1;for(i=110;i<=2150;i+=10){if(i>=1100)sensor_pitch=400;Runtime_Tick(i);}
+ CHECK(!g_course.scene_valid&&led_on);key=0;Runtime_Tick(2160);
+ /* A sample outage in the middle invalidates the entire two-second capture. */
+ reset_fixture();for(i=0;i<=100;i+=10)Runtime_Tick(i);
+ key=1;for(i=110;i<=2150;i+=10){respond=(i<800||i>=1100);Runtime_Tick(i);}
+ CHECK(!g_course.scene_valid&&led_on);key=0;Runtime_Tick(2160);
+ /* A hold while armed is a stop, never a new reference. */
+ reset_fixture();g_course.armed=1;g_course.mode=MODE_AUTO;g_course.mission.state=MS_CLIMB;
+ key=1;for(i=10;i<=2050;i+=10)Runtime_Tick(i);
+ CHECK(!g_course.armed&&!g_course.scene_valid&&stops>0);key=0;Runtime_Tick(2060);
  DONE();}
