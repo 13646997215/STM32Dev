@@ -1,8 +1,6 @@
 {
-  "cmake.cmakePath": "${workspaceFolder}/../../environment/stm32-bundles/cmake/4.4.0+st.1/bin/cmake.exe",
-  "cmake.preferredGenerators": [
-    "Ninja"
-  ],
+  "cmake.cmakePath": "cube-cmake",
+  "cmake.preferredGenerators": ["Ninja"],
   "stm32cube-ide-clangd.path": "cube",
   "stm32cube-ide-clangd.arguments": [
     "starm-clangd",
@@ -22,5 +20,6 @@
   "python.terminal.activateEnvironment": false,
   "commentTranslate.source": "Bing",
   "commentTranslate.targetLanguage": "zh-CN",
-  "commentTranslate.hover.enabled": true
+  "commentTranslate.hover.enabled": true,
+  "cmake.configureArgs": ["-DCMAKE_COMMAND=cube-cmake"]
 }
