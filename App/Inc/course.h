@@ -106,6 +106,8 @@ float Task1_Update(BalanceController *b,float pitch,uint32_t sample_seq,uint32_t
 
 /* Alignment damping: rate feedback on the heading error, in seconds. */
 #define ALIGN_DAMP 0.25f
+#define ALIGN_HOLD_MS 1000U
+#define CLIMB_HEADING_GAIN_MULTIPLIER 2.0f
 
 /* Balance-only linear and wheel speed limits (m/s); field tuning required. */
 #define BALANCE_SPEED_NEAR 0.025f

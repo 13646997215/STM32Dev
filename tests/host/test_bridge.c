@@ -12,7 +12,7 @@ int main(void)
     CHECK(Mission_Start(&m, PROFILE_BALANCE_RETURN, &in, &c));
     in.yaw_rad = .01f; in.now_ms = 20; in.imu_seq++;
     Mission_Update(&m, &in, &c);
-    in.now_ms = 600; in.imu_seq++;
+    in.now_ms = 1100; in.imu_seq++;
     Mission_Update(&m, &in, &c);
     CHECK(m.state == MS_CLIMB);
     /* Slope changes before the minimum approach distance cannot trigger. */
@@ -56,7 +56,7 @@ int main(void)
         a.imu.have_euler = 1; a.imu.euler_seq = 1;
         a.imu.euler_deg[2] = 90; a.motor[1].direction = -1;
         for (i = 0; i < 70; i++) {
-            uint32_t now = 600U + i * 10U;
+            uint32_t now = 1100U + i * 10U;
             /* Simulate one wheel still coasting after the turn. */
             if (i < 36) { fg[0].have_edge = fg[0].have_period = 1; fg[0].period_us = 1500; fg[0].last_us = now * 1000U; }
             else memset(&fg[0], 0, sizeof(fg[0]));

@@ -39,7 +39,7 @@ void Config_Default(RobotConfig *c)
     c->stable_deg=.5f;c->stable_rate_dps=1;c->disturb_deg=1.5f;c->max_tilt_deg=18;
     c->tip_delta_deg=3;c->seek_min_m=.2f;c->seek_max_m=1.25f;c->climb_end_m=.2f;
     c->start_x_m=-.3f;c->return_x_m=.08f;c->path_a_m=.5f;c->path_b_m=.3f;
-    c->pos_tol_m=.008f;c->yaw_tol_rad=.035f;c->boundary_margin_m=.015f;c->min_duty=0;
+    c->pos_tol_m=.008f;c->yaw_tol_rad=.017453293f;c->boundary_margin_m=.015f;c->min_duty=0;
     c->imu_timeout_ms=200;c->fg_timeout_ms=250;c->reversal_quiet_ms=200;
     c->forward_release[0]=0;c->forward_release[1]=1;c->start_requires_ramp=1;c->fg_fault_en=1;
 }
@@ -61,7 +61,7 @@ void Config_ApplyMeasured(RobotConfig *c)
     c->yaw_sign=-1;c->pitch_sign=1;c->pitch_axis=1;
     /* Initial field-tuning trial; not a claim of closed-loop stability. */
     c->balance_kp=.006f;c->balance_ki=.0020f;c->balance_kd=.028f;
-    c->max_tilt_deg=40;c->climb_end_m=.5f;c->yaw_tol_rad=.035f;
+    c->max_tilt_deg=40;c->climb_end_m=.5f;c->yaw_tol_rad=.017453293f;
     /* The course balance criterion is |dA-dB| < 30 mm over 1600 mm = 1.07 deg, so
        a 1.0 deg band still satisfies it while giving the on/off duty enough room
        to settle. The rate gate is loosened because the derived rate is noisy. */

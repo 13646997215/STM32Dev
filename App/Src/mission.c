@@ -57,7 +57,7 @@ void Mission_Update(Mission *m,const MissionInput *in,const RobotConfig *c)
   if(m->align_dir)u=(float)m->align_dir*fabsf(u);
   if(m->align_sign<0)u=-u;
   m->w=u;
-  if(fabsf(e)<=c->yaw_tol_rad){if(!m->tip_tracking){m->tip_tracking=1;m->trigger_ms=now;}else if((uint32_t)(now-m->trigger_ms)>=500U){m->tip_tracking=0;set_state(m,MS_CLIMB,now);}}
+  if(fabsf(e)<=c->yaw_tol_rad){if(!m->tip_tracking){m->tip_tracking=1;m->trigger_ms=now;}else if((uint32_t)(now-m->trigger_ms)>=ALIGN_HOLD_MS){m->tip_tracking=0;set_state(m,MS_CLIMB,now);}}
   else m->tip_tracking=0;
   break;
  case MS_SEEK:
@@ -65,7 +65,7 @@ void Mission_Update(Mission *m,const MissionInput *in,const RobotConfig *c)
   if(Mission_TipDetected(m,in->pitch_deg,1,now,c))set_state(m,MS_DONE,now);
   break;
  case MS_CLIMB:
-  m->v=c->max_v;m->w=Course_Clamp(-c->heading_kp*in->yaw_rad,-c->max_w,c->max_w);
+  m->v=c->max_v;m->w=Course_Clamp(-CLIMB_HEADING_GAIN_MULTIPLIER*c->heading_kp*in->yaw_rad,-c->max_w,c->max_w);
   if(m->profile==PROFILE_ENTRY&&in->pose.x>=c->climb_end_m){set_state(m,MS_SEEK,now);}
   else if(m->profile!=PROFILE_ENTRY&&first_flip(m,in,c)){
    Balance_Reset(&m->balance);m->balance_ms=now;set_state(m,MS_BALANCE,now);

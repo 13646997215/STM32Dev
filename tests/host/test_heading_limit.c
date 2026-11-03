@@ -13,10 +13,10 @@ int main(void)
  NEAR(m.w,-c.max_w,.0001f);
  in.yaw_rad=.02f;in.now_ms=20;in.imu_seq++;
  Mission_Update(&m,&in,&c);
- NEAR(m.w,-c.heading_kp*.02f,.0001f);
+ NEAR(m.w,-2*c.heading_kp*.02f,.0001f);
  in.yaw_rad=-.02f;in.now_ms=25;in.imu_seq++;
  Mission_Update(&m,&in,&c);
- NEAR(m.w,c.heading_kp*.02f,.0001f);
+ NEAR(m.w,2*c.heading_kp*.02f,.0001f);
  in.yaw_rad=1.5f;
  m.state=MS_BALANCE;Balance_Reset(&m.balance);
  in.yaw_rad=1.5f;in.pitch_deg=3;in.now_ms=30;in.imu_seq++;
